@@ -4,74 +4,54 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace RegExpBuilder
+namespace Builder;
+
+
+class State
 {
-    class State
+    public State()
     {
-        public State()
-        {
-            Options = new RegexOptions();
-        }
+        Options = new RegexOptions();
+        Reset();
+    }
 
-        private bool _some;
+    public bool Some { get; set; }
+    public bool ZeroOrOne { get; set; }
+    public int MinimumOf { get; set; }
+    public int MaximumOf { get; set; }
+    public RegexOptions Options { get; set; }
+    public bool Or { get; set; }
+    public bool MultiLine { get; set; }
 
-        public bool Some
-        {
-            get
-            {
-                var v = _some;
-                _some = false;
-                return v;
-            }
-            set { _some = value; }
-        }
+    // public void SetSome(bool value)
+    // {
+    //     Some = value;
+    //     if (value) Reset();
+    // }
 
+    // public void SetZeroOrOne(bool value)
+    // {
+    //     ZeroOrOne = value;
+    //     if (value) Reset();
+    // }
 
-        private bool _zeroOrMore;
+    // public void SetMinimumOf(int value)
+    // {
+    //     MinimumOf = value;
+    //     if (value != -1) Reset();
+    // }
 
-        public bool ZeroOrOne
-        {
-            get
-            {
-                var v = _zeroOrMore;
-                _zeroOrMore = false;
-                return v;
-            }
-            set { _zeroOrMore = value; }
-        }
+    // public void SetMaximumOf(int value)
+    // {
+    //     MaximumOf = value;
+    //     if (value != -1) Reset();
+    // }
 
-
-        private int _minimumOf = -1;
-
-        public int MinimumOf
-        {
-            get
-            {
-                var v = _minimumOf;
-                _minimumOf = -1;
-                return v;
-            }
-            set { _minimumOf = value; }
-        }
-
-
-        private int _maximumOf = -1;
-        public bool MultiLine;
-
-        public int MaximumOf
-        {
-            get
-            {
-                var v = _maximumOf;
-                _maximumOf = -1;
-                return v;
-            }
-            set { _maximumOf = value; }
-        }
-
-
-        public RegexOptions Options { get; set; }
-
-        public bool Or { get; set; }
+    private void Reset()
+    {
+        Some = false;
+        ZeroOrOne = false;
+        MinimumOf = -1;
+        MaximumOf = -1;
     }
 }

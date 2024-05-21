@@ -3,238 +3,269 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using RegExpBuilder;
 
-namespace Builder
+namespace Builder;
+public class RegExpBuilder
 {
-    public class RegExpBuilder
+    private List<string> _expressions;
+    private State _state;
+
+    public RegExpBuilder()
     {
-        private List<string> _expression;
+        _state = new State();
+        _expressions = new List<string>();
+    }
 
-        private State _state;
+    // Adds a new group to the regular expression
+    public RegExpBuilder Group()
+    {
+        var builder = new RegExpBuilder();
+        _expressions.Add(AddParenthesis(builder.ToString()));
+        return this;
+    }
 
-        public RegExpBuilder()
+    // Converts the regular expression to a string
+    public override string ToString()
+    {
+        return string.Join("", _expressions);
+    }
+
+    // Converts the regular expression to a Regex object
+    public Regex ToRegExp()
+    {
+        RegexOptions options = _state.MultiLine ? RegexOptions.Multiline : new RegexOptions();
+        return new Regex(this.ToString(), options);
+    }
+
+
+    public AnchorBuilder AddAnchor()
+    {
+        return new AnchorBuilder(this);
+    }
+
+    public RegExpBuilder AddAnchor(AnchorBuilder anchor)
+    {
+        _expressions.Add(anchor.ToString());
+        return this;
+    }
+
+    public RegExpBuilder AddAnchor(Action<AnchorBuilder> config)
+    {
+        var anchorBuilder = new AnchorBuilder();
+        config(anchorBuilder);
+        _expressions.Add(anchorBuilder.ToString());
+        return this;
+    }
+
+    // Adds a start of input anchor to the regular expression
+    public RegExpBuilder StartOfInput()
+    {
+        _expressions.Add("(?:^)");
+        return this;
+    }
+
+    // Adds an end of input anchor to the regular expression
+    public RegExpBuilder EndOfInput()
+    {
+        _expressions.Add("(?:$)");
+        return this;
+    }
+
+    // Adds a start of line anchor to the regular expression
+    public RegExpBuilder StartOfLine()
+    {
+        _state.MultiLine = true;
+        StartOfInput();
+        return this;
+    }
+
+    // Adds an end of line anchor to the regular expression
+    public RegExpBuilder EndOfLine()
+    {
+        _state.MultiLine = true;
+        EndOfInput();
+        return this;
+    }
+
+    // Sets the state to match one or more of the next character
+    public RegExpBuilder OneOrMore()
+    {
+        _state.Some = true;
+        return this;
+    }
+
+    // Adds a digit character class to the regular expression
+    public RegExpBuilder Digit()
+    {
+        AddExpression("d");
+        return this;
+    }
+
+    // Adds a digit character class with a plus quantifier to the regular expression
+    public RegExpBuilder Digits()
+    {
+        AddExpression("d+");
+        return this;
+    }
+
+    // Sets the state to match zero or one of the next character
+    public RegExpBuilder ZeroOrOne()
+    {
+        _state.ZeroOrOne = true;
+        return this;
+    }
+
+    // Adds a letter character class to the regular expression
+    public RegExpBuilder Letter()
+    {
+        _state.Some = false;
+        AddFrom("A-Za-z");
+        return this;
+    }
+
+    // Adds a letter character class with a plus quantifier to the regular expression
+    public RegExpBuilder Letters()
+    {
+        _state.Some = true;
+        AddFrom("A-Za-z");
+        return this;
+    }
+
+    // Sets the state to match a minimum number of the next character
+    public RegExpBuilder MinimumOf(int minimumOccurence)
+    {
+        _state.MinimumOf = minimumOccurence;
+        return this;
+    }
+
+    // Sets the state to match an alternative pattern
+    public RegExpBuilder Or()
+    {
+        _state.Or = true;
+        return this;
+    }
+
+    // Adds an alternative pattern to the regular expression
+    public RegExpBuilder OrLike(Regex RegExpression)
+    {
+        var lastExpression = _expressions.Last();
+        _expressions.Remove(lastExpression);
+
+        lastExpression = StripParenthesis(lastExpression);
+
+        _expressions.Add(AddParenthesis($"{lastExpression}|(?:{RegExpression})"));
+
+        return this;
+    }
+
+    // Removes the parenthesis from a string
+    private string StripParenthesis(string literal)
+    {
+        return literal.Trim('(', ')');
+    }
+
+    // Adds parenthesis to a string
+    private string AddParenthesis(string literal)
+    {
+        return literal.Length > 0 ? $"({literal})" : literal;
+    }
+
+    // Adds a character class to the regular expression
+    private void AddFrom(string characterClass)
+    {
+        var from = $"[{characterClass}]";
+        from = AddFilters(from);
+
+        _expressions.Add(from);
+    }
+
+    // Adds filters to a string
+    private string AddFilters(string literal)
+    {
+        var quantitySet = GetQuantityLiteral();
+        literal += quantitySet;
+
+        if (quantitySet == string.Empty)
         {
-            _state = new State();
-            _expression = new List<string>();
+            if (_state.ZeroOrOne && !literal.EndsWith("?"))
+                literal += "?";
+
+            if (_state.Some && !literal.EndsWith("+"))
+                literal += "+";
         }
 
-        public override string ToString()
+        return literal;
+    }
+
+    private string GetQuantityLiteral()
+    {
+        if (_state.MinimumOf == -1 && _state.MaximumOf == -1)
+            return string.Empty;
+
+        if (_state.MinimumOf == 0 && _state.MaximumOf == -1)
+            return "*";
+
+        if (_state.MinimumOf == 1 && _state.MaximumOf == -1)
+            return "+";
+
+        if (_state.MinimumOf == 0 && _state.MaximumOf == 1)
+            return "?";
+
+        if (_state.MinimumOf == _state.MaximumOf)
+            return $"{{{_state.MinimumOf}}}";
+
+        return $"{{{_state.MinimumOf},{_state.MaximumOf}}}";
+
+    }
+
+    // Adds a literal to the regular expression
+    private void AddExpression(string literal)
+    {
+        Add(@"\" + literal);
+    }
+
+    // Adds a string to the regular expression
+    internal void Add(string literal)
+    {
+        literal = AddFilters(literal);
+        literal = HandleConditions(literal);
+        literal = AddParenthesis(literal);
+        if (literal.Length > 0)
+            _expressions.Add(literal);
+    }
+
+    // Handles the conditions for the regular expression
+    private string HandleConditions(string literal)
+    {
+        if (_state.Or)
         {
-            return string.Join("", _expression.ToArray());
+            this.OrLike(new Regex(literal));
+            literal = "";
+            _state.Or = false;
         }
 
-        public Regex ToRegExp()
-        {
-            RegexOptions options = new RegexOptions();
-            if (_state.MultiLine)
-                options = options | RegexOptions.Multiline;
+        return literal;
+    }
 
-            return new Regex(this.ToString(), options);
-        }
+    // Sets the state to match a maximum number of the next character
+    public RegExpBuilder MaximumOf(int maximumOccurences)
+    {
+        _state.MaximumOf = maximumOccurences;
+        return this;
+    }
 
-        public RegExpBuilder StartOfInput()
-        {
-            _expression.Add("(?:^)");
-            return this;
-        }
+    // Sets the state to match exactly a number of the next character
+    public RegExpBuilder Exactly(int occurences)
+    {
+        _state.MinimumOf = occurences;
+        _state.MaximumOf = occurences;
+        return this;
+    }
 
-        public RegExpBuilder EndOfInput()
-        {
-            _expression.Add("(?:$)");
-            return this;
-        }
-
-        public RegExpBuilder StartOfLine()
-        {
-            _state.MultiLine = true;
-            StartOfInput();
-            return this;
-        }
-
-        public RegExpBuilder EndOfLine()
-        {
-            _state.MultiLine = true;
-            EndOfInput();
-            return this;
-        }
-
-        public RegExpBuilder OneOrMore()
-        {
-            _state.Some = true;
-            return this;
-        }
-
-        public RegExpBuilder Digit()
-        {
-            AddExpression("d");
-
-            return this;
-        }
-
-        public RegExpBuilder Digits()
-        {
-            AddExpression("d+");
-
-            return this;
-        }
-
-        private string _AZaz = "A-Za-z";
-
-        public RegExpBuilder ZeroOrOne()
-        {
-            _state.ZeroOrOne = true;
-            return this;
-        }
-
-        public RegExpBuilder Letter()
-        {
-            _state.Some = false;
-            AddFrom(_AZaz);
-
-            return this;
-        }
-
-        public RegExpBuilder Letters()
-        {
-            _state.Some = true;
-            AddFrom(_AZaz);
-
-            return this;
-        }
-
-        public RegExpBuilder MinimumOf(int minimumOccurence)
-        {
-            _state.MinimumOf = minimumOccurence;
-            return this;
-        }
-
-        public RegExpBuilder Or()
-        {
-            //OrLike(new RegExpBuilder().Exactly(1).Of(searchString).ToRegExp());
-            _state.Or = true;
-            return this;
-        }
-
-        public RegExpBuilder OrLike(Regex RegExpression)
-        {
-            var literal = _expression.Last();
-            _expression.Remove(_expression.Last());
-
-            literal = StripParenthesis(literal);
-
-            _expression.Add(AddParenthesis(literal + "|(?:" + RegExpression.ToString() + ")"));
-
-
-            return this;
-        }
-
-        private string StripParenthesis(string literal)
-        {
-            if (literal.StartsWith("("))
-                literal = literal.Remove(0, 1);
-            if (literal.EndsWith(")"))
-                literal = literal.Substring(0, literal.Length - 1);
-
-            return literal;
-        }
-
-        private string AddParenthesis(string literal)
-        {
-            if (literal.Length > 0)
-                return "(" + literal + ")";
-
-            return literal;
-        }
-
-        private string GetQuantityLiteral()
-        {
-            int min = _state.MinimumOf;
-            int max = _state.MaximumOf;
-
-            var literal = "";
-
-            if (min > -1 || max > -1)
-            {
-                string minValue = min > -1 ? min.ToString() : "0";
-                string maxValue = max > -1 ? max.ToString() : "";
-
-                literal = string.Format("{{{0},{1}}}", minValue, maxValue);
-            }
-
-            return literal;
-        }
-
-        private void AddFrom(string p)
-        {
-            var from = string.Format("[{0}]", p);
-            from = AddFilters(from);
-
-            _expression.Add(from);
-        }
-
-        private string AddFilters(string literal)
-        {
-
-            var quantitySet = GetQuantityLiteral();
-            literal += quantitySet;
-
-            if (quantitySet == string.Empty)
-            {
-                if (_state.ZeroOrOne && !literal.EndsWith("?"))
-                    literal += "?";
-
-                if (_state.Some && !literal.EndsWith("+"))
-                    literal += "+";
-            }
-
-            return literal;
-        }
-
-
-        private void AddExpression(string literal)
-        {
-            Add(@"\" + literal);
-        }
-
-        private void Add(string _literal)
-        {
-            _literal = AddFilters(_literal);
-            _literal = HandleConditions(_literal);
-            _literal = AddParenthesis(_literal);
-            if (_literal.Length > 0)
-                _expression.Add(_literal);
-        }
-
-        private string HandleConditions(string _literal)
-        {
-            if (_state.Or)
-            {
-                this.OrLike(new Regex(_literal));
-                _literal = "";
-                _state.Or = false;
-            }
-
-            return _literal;
-        }
-
-        public RegExpBuilder MaximumOf(int maximumOccurences)
-        {
-            _state.MaximumOf = maximumOccurences;
-            return this;
-        }
-
-        public RegExpBuilder Exactly(int occurences)
-        {
-            _state.MinimumOf = occurences;
-            _state.MaximumOf = occurences;
-            return this;
-        }
-
-        public RegExpBuilder Of(string stringToMatch)
-        {
-            Add(stringToMatch);
-            return this;
-        }
+    // Adds a string to match to the regular expression
+    public RegExpBuilder Of(string stringToMatch)
+    {
+        Add(stringToMatch);
+        return this;
     }
 }
