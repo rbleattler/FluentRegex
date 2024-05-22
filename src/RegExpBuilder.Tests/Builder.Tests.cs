@@ -1,0 +1,137 @@
+using Builder;
+
+namespace RegExpBuilderTests;
+// TODO: Add tests for each scenario on _groups_ as well
+public class BuilderTests
+{
+  private Builder.Builder _builder;
+
+  public BuilderTests()
+  {
+    // This constructor replaces the [TestInitialize] method
+    _builder = new RegExpBuilder();
+  }
+
+  [Fact]
+  public void TestStripParenthesis()
+  {
+    Assert.Equal("test", _builder.StripParenthesis("(test)"));
+  }
+
+  [Fact]
+  public void TestAddParenthesis()
+  {
+    Assert.Equal("(test)", _builder.AddParenthesis("test"));
+  }
+
+  [Fact]
+  public void TestBuild()
+  {
+    Assert.Equal(string.Empty, _builder.Build());
+  }
+
+  [Fact]
+  public void TestAsNamedCaptureGroup()
+  {
+    var result = _builder.Add("testValue").AsNamedCaptureGroup("test", NamedGroupStyle.AngleBrackets).Build();
+    Assert.Equal("(?<test>testValue)", result);
+  }
+
+  [Fact]
+  public void TestAsNonCaptureGroup()
+  {
+    var result = _builder.Add("testValue").AsNonCaptureGroup().Build();
+    Assert.Equal("(?:testValue)", result);
+  }
+
+  [Fact]
+  public void TestAsCaptureGroup()
+  {
+    var result = _builder.Add("testValue").AsCaptureGroup().Build();
+    Assert.Equal("(testValue)", result);
+  }
+
+  [Fact]
+  public void TestStartOfInput()
+  {
+    var result = _builder.StartOfInput().Build();
+    Assert.Equal("^", result);
+  }
+
+  [Fact]
+  public void TestEndOfInput()
+  {
+    var result = _builder.EndOfInput().Build();
+    Assert.Equal("$", result);
+  }
+
+  [Fact]
+  public void TestOneOrMore()
+  {
+    var result = _builder.OneOrMore().Add("x").Build();
+    Assert.Equal("x+", result);
+  }
+
+  [Fact]
+  public void TestDigit()
+  {
+    var result = _builder.Digit().Build();
+    Assert.Equal($"\\d", result);
+  }
+
+  [Fact]
+  public void TestDigits()
+  {
+    var result = _builder.Digits().Build();
+    Assert.Equal("\\d+", result);
+  }
+
+  [Fact]
+  public void TestZeroOrOne()
+  {
+    var result = _builder.Add("x").ZeroOrOne().Build();
+    Assert.Equal("x?", result);
+  }
+
+  [Fact]
+  public void TestLetter()
+  {
+    var result = _builder.Letter().Build();
+    Assert.Equal("[A-Za-z]", result);
+  }
+
+  [Fact]
+  public void TestLetters()
+  {
+    var result = _builder.Letters().Build();
+    Assert.Equal("[A-Za-z]+", result);
+  }
+
+  [Fact]
+  public void TestMinimumOf()
+  {
+    var result = _builder.MinimumOf(3).Build();
+    Assert.Equal("{3,}", result);
+  }
+
+  [Fact]
+  public void TestOr()
+  {
+    var result = _builder.Add("this").Add("that").Build();
+    Assert.Equal("this|that", result);
+  }
+
+  [Fact]
+  public void TestAddLiteral()
+  {
+    var result = _builder.Add("test").Build();
+    Assert.Equal("test", result);
+  }
+
+  [Fact]
+  public void TestAddFrom()
+  {
+    var result = _builder.AddFrom("A-Z").Build();
+    Assert.Equal("[A-Z]", result);
+  }
+}

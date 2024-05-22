@@ -7,20 +7,20 @@ public class AnchorBuilder : Builder
 {
 
   /// <summary>
-  /// Initializes a new instance of the <see cref="AnchorBuilder"/> class with the specified <see cref="RegExpBuilder"/>.
+  /// Initializes a new instance of the <see cref="AnchorBuilder"/> class with the specified <see cref="Builder"/>.
   /// </summary>
-  /// <param name="regExpBuilder">The <see cref="RegExpBuilder"/> to associate with this <see cref="AnchorBuilder"/>.</param>
-  public AnchorBuilder(RegExpBuilder regExpBuilder)
+  /// <param name="Builder">The <see cref="Builder"/> to associate with this <see cref="AnchorBuilder"/>.</param>
+  public AnchorBuilder(Builder Builder)
   {
-    _regExpBuilder = regExpBuilder;
+    _Builder = Builder;
   }
 
   /// <summary>
-  /// Initializes a new instance of the <see cref="AnchorBuilder"/> class with a new <see cref="RegExpBuilder"/>.
+  /// Initializes a new instance of the <see cref="AnchorBuilder"/> class with a new <see cref="Builder"/>.
   /// </summary>
   public AnchorBuilder()
   {
-    _regExpBuilder = new RegExpBuilder();
+    _Builder = this;
   }
 
   /// <summary>
@@ -93,13 +93,4 @@ public class AnchorBuilder : Builder
     return _expression ?? "";
   }
 
-  /// <summary>
-  /// Adds the regular expression pattern represented by this <see cref="AnchorBuilder"/> to the associated <see cref="RegExpBuilder"/>.
-  /// </summary>
-  /// <returns>The associated <see cref="RegExpBuilder"/>.</returns>
-  public RegExpBuilder AddToRegExpBuilder()
-  {
-    _regExpBuilder.Add(_expression!);
-    return _regExpBuilder;
-  }
 }

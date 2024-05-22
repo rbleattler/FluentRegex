@@ -1,36 +1,39 @@
-RegExpBuilder
-=============
+# RegExpBuilder
 
 A library for building RegExpPatterns. It is not available as a nuget package yet, because I would like to add some more features to it, before relasing a package. I'm not great at writing regex, so I would really appreciate any feedback if you have any.
+
 ## What is it?
-A linq extensions style of building RegExpPatterns in .NET.  
+
+A linq extensions style of building RegExpPatterns in .NET.
 Related Blogpost: [I don't know Regex](http://ideasof.andersaberg.com/idea/17/i-dont-know-regex)
 
 ## Example
-**Good code is simple code.**  
+
+**Good code is simple code.**
 Which one of these snippets of code do you want to find in your code?
 
 `var regEx = {(?:^)[A-Za-z]([A-Za-z]+|(?:\d+))(@{1,1})[A-Za-z]+(.{1,1})[A-Za-z]+(?:$)}`
 
-*or*
+_or_
 
-	var builder = new Builder.RegExpBuilder();
+    var builder = new Builder.RegExpBuilder();
     var r = builder
-		.StartOfInput()
+    	.StartOfInput()
         .Letter() // Must start with letter a-z
-		.Letters() // any number of letters
-        .Or() 
+    	.Letters() // any number of letters
+        .Or()
         .Digits() // any number of numbers
-		.Exactly(1).Of("@")
-		.Letters() // domain
-		.Exactly(1).Of(".")
+    	.Exactly(1).Of("@")
+    	.Letters() // domain
+    	.Exactly(1).Of(".")
         .Letters() // top-level domain
         .EndOfInput()
         .ToRegExp();
 
 # How to use it
 
-### Of("Github").Or().Of("BitBucket")		
+### Of("Github").Or().Of("BitBucket")
+
             var builder = new Builder.RegExpBuilder();
             var r = builder
                 .StartOfLine()
@@ -39,30 +42,30 @@ Which one of these snippets of code do you want to find in your code?
                 .Exactly(1).Of("bitbucket")
                 .EndOfLine()
                 .ToRegExp();
-			
-			// r.ToString() == "(?:^)(github{1,1}|(?:bitbucket{1,1}))(?:$)"
+
+    		// r.ToString() == "(?:^)(github{1,1}|(?:bitbucket{1,1}))(?:$)"
 
             Assert.IsTrue(r.Match("github").Success, "Found one Github");
             Assert.IsTrue(r.Match("bitbucket").Success, "Found one Bitbucket");
 
             Assert.IsFalse(r.Match("githubgithub").Success, "Oops, Found too Many Github");
             Assert.IsFalse(r.Match("bitbucketbitbucket").Success, ""Oops, Found too Many Github");
-       
 
 ### Find one digit
+
     var builder = new Builder.RegExpBuilder();
-	    var r = builder
-				.StartOfLine()
+        var r = builder
+    			.StartOfLine()
                 .Digit()
                 .EndOfLine()
                 .ToRegExp();
 
         r.Match("1").Success; // true
-		r.Match("11").Success); // false
-
+    	r.Match("11").Success); // false
 
 ### Exactly().Of("yourString")
-	public void ExactlyOfCustom()
+
+    public void ExactlyOfCustom()
         {
 
             var builder = new Builder.RegExpBuilder();
@@ -79,4 +82,5 @@ Which one of these snippets of code do you want to find in your code?
         }
 
 ### There is alot more examples in the test files!
+
 [RegExpBuilderTests.cs](https://github.com/abergs/RegExpBuilder/blob/master/RegExpBuilderTests/RegExpBuilderTests.cs)

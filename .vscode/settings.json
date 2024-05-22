@@ -2,5 +2,15 @@
   "cSpell.words": [
     "subpattern"
   ],
-  "dotnet.preferCSharpExtension": true
+  "dotnet.preferCSharpExtension": false,
+  "nunitTestRunner.projectsPatterns": [
+    "**/bin/*.Tests.dll",
+    "src/**/*.Tests.dll"
+  ],
+  "dotnetAcquisitionExtension.sharedExistingDotnetPath": "C:\\bin\\dotnet",
+  "azureResourceManagerTools.languageServer.dotnetExePath": "C:\\bin\\dotnet\\dotnet.exe",
+  "dotnet.dotnetPath": "C:\\bin\\dotnet\\",
+  "dotnetAcquisitionExtension.existingDotnetPath": [
+    "C:\\bin\\dotnet\\"
+  ]
 }

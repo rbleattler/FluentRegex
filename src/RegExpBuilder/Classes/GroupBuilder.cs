@@ -6,14 +6,22 @@ namespace Builder;
 public class GroupBuilder : Builder
 {
 
+
+  /// <summary>
+  /// Initializes a new instance of the <see cref="GroupBuilder"/> class with a new <see cref="Builder"/>.
+  /// </summary>
+  public GroupBuilder()
+  {
+    _Builder = this;
+  }
   /// <summary>
   /// Initializes a new instance of the <see cref="GroupBuilder"/> class.
   /// </summary>
-  /// <param name="regExpBuilder">The parent <see cref="RegExpBuilder"/> instance.</param>
+  /// <param name="Builder">The parent <see cref="Builder"/> instance.</param>
   /// <param name="expression">The current regular expression expression.</param>
-  public GroupBuilder(RegExpBuilder regExpBuilder, string expression = "")
+  public GroupBuilder(Builder Builder, string expression = "")
   {
-    _regExpBuilder = regExpBuilder;
+    _Builder = Builder;
     _expression = expression;
   }
 
@@ -26,7 +34,13 @@ public class GroupBuilder : Builder
   {
     if (string.IsNullOrEmpty(pattern))
       throw new ArgumentException("Pattern cannot be null or empty.");
-    return new GroupBuilder(_regExpBuilder, _expression + $"({pattern})");
+    return new GroupBuilder(_Builder, _expression + $"({pattern})");
+  }
+  public GroupBuilder CaptureGroup()
+  {
+    if (string.IsNullOrEmpty(_expression))
+      throw new ArgumentException("Pattern cannot be null or empty.");
+    return new GroupBuilder(_Builder, $"({_expression})");
   }
 
   /// <summary>
@@ -38,7 +52,7 @@ public class GroupBuilder : Builder
   {
     if (string.IsNullOrEmpty(pattern))
       throw new ArgumentException("Pattern cannot be null or empty.");
-    return new GroupBuilder(_regExpBuilder, _expression + $"(?:{pattern})");
+    return new GroupBuilder(_Builder, _expression + $"(?:{pattern})");
   }
 
   /// <summary>
@@ -69,7 +83,7 @@ public class GroupBuilder : Builder
         break;
 
     }
-    return new GroupBuilder(_regExpBuilder, newExpression);
+    return new GroupBuilder(_Builder, newExpression);
   }
 
   /// <summary>
@@ -156,13 +170,4 @@ public class GroupBuilder : Builder
     return this;
   }
 
-  /// <summary>
-  /// Adds the current expression to the parent <see cref="RegExpBuilder"/> instance.
-  /// </summary>
-  /// <returns>The parent <see cref="RegExpBuilder"/> instance.</returns>
-  public RegExpBuilder AddToRegExpBuilder()
-  {
-    _regExpBuilder.Add(_expression!);
-    return _regExpBuilder;
-  }
 }

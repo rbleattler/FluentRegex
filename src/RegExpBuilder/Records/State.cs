@@ -18,6 +18,8 @@ public record State(
                     bool MultiLine
                     )
 {
+    public State() : this(false, false, -1, -1, new RegexOptions(), false, false) { }
+
     /// <summary>
     /// Gets or sets a value indicating whether the state represents "some" occurrence.
     /// </summary>
@@ -53,13 +55,6 @@ public record State(
     /// </summary>
     public bool MultiLine { get; private set; } = MultiLine;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="State"/> class.
-    /// </summary>
-    public State() : this(default, default, default, default, new RegexOptions(), default, default)
-    {
-        Reset();
-    }
 
     /// <summary>
     /// Sets the value indicating whether the state represents "some" occurrence.
