@@ -154,7 +154,9 @@ public abstract class Builder
   /// <remarks>Unnamed capture groups are used to group subexpressions and capture the matched text.</remarks>
   public Builder AsCaptureGroup()
   {
-    return new GroupBuilder().CaptureGroup(_expression!);
+    var groupBuilder = new GroupBuilder().CaptureGroup(_expression!);
+    _expression = groupBuilder.ToString();
+    return this;
   }
 
 
@@ -196,6 +198,7 @@ public abstract class Builder
   {
     _state.SetMultiLine(true);
     StartOfInput();
+    HandleState();
     return this;
   }
 
@@ -207,6 +210,7 @@ public abstract class Builder
   {
     _state.SetMultiLine(true);
     EndOfInput();
+    HandleState();
     return this;
   }
 
@@ -217,6 +221,7 @@ public abstract class Builder
   public Builder OneOrMore()
   {
     _state.SetSome(true);
+    HandleState();
     return this;
   }
 
@@ -226,7 +231,7 @@ public abstract class Builder
   /// <returns>The <see cref="Builder"/> instance.</returns>
   public Builder Digit()
   {
-    AddLiteral("d");
+    AddLiteral(CharacterClass.Digit);
     return this;
   }
 
@@ -236,7 +241,8 @@ public abstract class Builder
   /// <returns>The <see cref="Builder"/> instance.</returns>
   public Builder Digits()
   {
-    AddLiteral("d+");
+    AddLiteral(CharacterClass.Digit);
+    OneOrMore();
     return this;
   }
 
@@ -247,6 +253,7 @@ public abstract class Builder
   public Builder ZeroOrOne()
   {
     _state.SetZeroOrOne(true);
+    HandleState();
     return this;
   }
 
@@ -280,6 +287,7 @@ public abstract class Builder
   public Builder MinimumOf(int minimumOccurrence)
   {
     _state.SetMinimumOf(minimumOccurrence);
+    HandleState();
     return this;
   }
 
@@ -290,6 +298,7 @@ public abstract class Builder
   public Builder Or()
   {
     _state.SetOr(true);
+    HandleState();
     return this;
   }
 
@@ -337,6 +346,12 @@ public abstract class Builder
     if (_state.MinimumOf == _state.MaximumOf)
       return $"{{{_state.MinimumOf}}}";
 
+    if (_state.MinimumOf == -1 && _state.MaximumOf != -1)
+      return $"{{0,{_state.MaximumOf}}}";
+
+    if (_state.MinimumOf != -1 && _state.MaximumOf == -1)
+      return $"{{{_state.MinimumOf},}}";
+
     return $"{{{_state.MinimumOf},{_state.MaximumOf}}}";
   }
 
@@ -372,7 +387,7 @@ public abstract class Builder
     var classes = CharacterClasses.GetCharacterClasses();
     if (literal.Length == 1 && classes.Contains(literal))
     {
-      var literalName = Enum.Parse<CharacterClass>(literal);
+      var literalName = CharacterClasses.GetCharacterClass(literal);
       literal = AddFilters(CharacterClasses.GetLiteral(literalName));
       _expression += $"\\{literal}";
     }
@@ -380,7 +395,21 @@ public abstract class Builder
     {
       literal = AddFilters(literal);
       _expression += Regex.Escape(literal);
+      HandleState();
     }
+  }
+
+  /// <summary>
+  /// Adds a literal to the regular expression.
+  /// </summary>
+  /// <param name="characterClass">The character class to add the literal for.</param>
+  private void AddLiteral(CharacterClass characterClass)
+  {
+    var literal = CharacterClasses.GetLiteral(characterClass);
+    literal = AddFilters(literal);
+    // _expression += Regex.Escape(literal);
+    _expression += literal;
+    HandleState();
   }
 
   /// <summary>
@@ -394,6 +423,7 @@ public abstract class Builder
     try
     {
       _expression += AddFilters(target.ToString()!);
+      HandleState();
     }
     catch (Exception ex) when (ex is NullReferenceException || ex is FormatException)
     {
@@ -413,4 +443,46 @@ public abstract class Builder
     return this;
   }
 
+  /// <summary>
+  /// Handles state changes for the regular expression.
+  /// </summary>
+
+  public void HandleState(bool? resetState = false)
+  {
+    if (_state.Or)
+    {
+      _expression += "|";
+      _state.SetOr(false);
+    }
+
+    if (_state.ZeroOrOne)
+    {
+      _expression += "?";
+      _state.SetZeroOrOne(false);
+    }
+
+    if (_state.Some)
+    {
+      _expression += "+";
+      _state.SetSome(false);
+    }
+
+    if (_state.MinimumOf != -1 || _state.MaximumOf != -1)
+    {
+      _expression += GetQuantityLiteral();
+      _state.SetMinimumOf(-1);
+      _state.SetMaximumOf(-1);
+    }
+
+    if (resetState == true)
+    {
+      _state.Reset();
+    }
+  }
+
+  public void Reset()
+  {
+    _expression = string.Empty;
+    _state.Reset();
+  }
 }

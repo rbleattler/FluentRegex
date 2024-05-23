@@ -112,12 +112,15 @@ public class BuilderTests
   {
     var result = _builder.MinimumOf(3).Build();
     Assert.Equal("{3,}", result);
+    _builder.Reset();
+    result = _builder.Add("(hey)").MinimumOf(6).Build();
+    Assert.Equal("(hey){6,}", result);
   }
 
   [Fact]
   public void TestOr()
   {
-    var result = _builder.Add("this").Add("that").Build();
+    var result = _builder.Add("this").Or().Add("that").Build();
     Assert.Equal("this|that", result);
   }
 

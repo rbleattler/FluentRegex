@@ -88,16 +88,17 @@ public class RegExpBuilder : Builder
     /// Adds a string to the regular expression.
     /// </summary>
     /// <param name="literal">The string to add.</param>
-    internal void Add(string literal)
+    internal RegExpBuilder Add(string literal)
     {
         literal = AddFilters(literal);
         literal = HandleConditions(literal);
         // literal = AddParenthesis(literal);
         if (literal.Length > 0)
             _expressions.Add(literal);
+        return this;
     }
 
-    internal void Add(string literal, bool withParenthesis = false)
+    internal RegExpBuilder Add(string literal, bool withParenthesis = false)
     {
         literal = AddFilters(literal);
         literal = HandleConditions(literal);
@@ -105,6 +106,7 @@ public class RegExpBuilder : Builder
             literal = AddParenthesis(literal);
         if (literal.Length > 0)
             _expressions.Add(literal);
+        return this;
     }
 
     /// <summary>
@@ -112,7 +114,7 @@ public class RegExpBuilder : Builder
     /// </summary>
     /// <param name="stringToMatch">The string to match.</param>
     /// <returns>The <see cref="Builder"/> instance.</returns>
-    public Builder Of(string stringToMatch)
+    public RegExpBuilder Of(string stringToMatch)
     {
         Add(stringToMatch);
         return this;
@@ -121,20 +123,39 @@ public class RegExpBuilder : Builder
     /// <summary>
     /// Adds an alternative pattern to the regular expression.
     /// </summary>
-    /// <param name="RegExpression">The alternative regular expression.</param>
+    /// <param name="regExpression">The alternative regular expression.</param>
     /// <returns>The <see cref="Builder"/> instance.</returns>
-    public Builder OrLike(Regex RegExpression)
+    public RegExpBuilder OrLike(Regex regExpression)
     {
-        var lastExpression = _expressions.Last();
-        _expressions.Remove(lastExpression);
-
-        lastExpression = StripParenthesis(lastExpression);
-
-        _expressions.Add(AddParenthesis($"{lastExpression}|{RegExpression}"));
-
+        OrLike(regExpression, false, false);
         return this;
     }
 
+
+    /// <summary>
+    /// Adds an alternative pattern to the regular expression.
+    /// </summary>
+    /// <param name="regExpression">The alternative regular expression.</param>
+    /// <param name="stripParenthesis">Whether to strip the parenthesis.</param>
+    /// <param name="surroundWithParenthesis">Whether to surround with parenthesis.</param>
+    public RegExpBuilder OrLike(Regex regExpression, bool stripParenthesis = true, bool surroundWithParenthesis = true)
+    {
+        var lastExpression = _expressions.Last();
+        string _output;
+        _expressions.Remove(lastExpression);
+
+        if (stripParenthesis)
+            lastExpression = StripParenthesis(lastExpression);
+
+        if (surroundWithParenthesis)
+            _output = AddParenthesis($"{lastExpression}|{regExpression}");
+        else
+            _output = $"{lastExpression}|{regExpression}";
+
+        _expressions.Add(_output);
+
+        return this;
+    }
 
     /// <summary>
     /// Handles the conditions for the regular expression.

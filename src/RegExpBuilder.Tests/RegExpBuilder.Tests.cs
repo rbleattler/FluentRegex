@@ -19,7 +19,7 @@ public class RegExpBuilderTests
   public void TestAddGroupWithConfig()
   {
     var regExpBuilder = new RegExpBuilder();
-    regExpBuilder.AddGroup(groupBuilder => groupBuilder.Add("test")).AsCaptureGroup();
+    regExpBuilder.AddGroup(groupBuilder => groupBuilder.Add("test").AsCaptureGroup());
     Assert.Equal("(test)", regExpBuilder.ToString());
   }
 
@@ -53,7 +53,8 @@ public class RegExpBuilderTests
   public void TestOrLike()
   {
     var regExpBuilder = new RegExpBuilder();
-    regExpBuilder.Of("test").Add(new Regex("abc"));
+    regExpBuilder.Of("(test)").OrLike(new Regex("(abc)"));
+    // regExpBuilder.OrLike(new Regex("(abc)")); //TODO: Why won't this work as an inline dot notation on the previous line?
     Assert.Equal("(test)|(abc)", regExpBuilder.ToString());
   }
 

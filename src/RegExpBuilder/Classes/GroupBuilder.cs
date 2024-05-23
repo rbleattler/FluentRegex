@@ -30,17 +30,21 @@ public class GroupBuilder : Builder
   /// </summary>
   /// <param name="pattern">The pattern to capture.</param>
   /// <returns>A new <see cref="GroupBuilder"/> instance with the updated expression.</returns>
-  public GroupBuilder CaptureGroup(string pattern)
+  public Builder CaptureGroup(string pattern)
   {
     if (string.IsNullOrEmpty(pattern))
       throw new ArgumentException("Pattern cannot be null or empty.");
-    return new GroupBuilder(_Builder, _expression + $"({pattern})");
+    // return new GroupBuilder(_Builder, _expression + $"({pattern})");
+    _expression = AddParenthesis(pattern);
+    return this;
   }
-  public GroupBuilder CaptureGroup()
+  public Builder CaptureGroup()
   {
     if (string.IsNullOrEmpty(_expression))
       throw new ArgumentException("Pattern cannot be null or empty.");
-    return new GroupBuilder(_Builder, $"({_expression})");
+    // return new GroupBuilder(_Builder, $"({_expression})");
+    _expression = AddParenthesis(_expression);
+    return this;
   }
 
   /// <summary>
