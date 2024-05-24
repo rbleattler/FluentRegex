@@ -305,3 +305,5 @@ steps:
         env:
           DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
           DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+
+#TODO: Add a task to pack the project and push to nuget gallery

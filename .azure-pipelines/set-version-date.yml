@@ -1,0 +1,28 @@
+steps:
+  - powershell: |
+      $buildCounter = "$(Build.BuildId)"
+      # wrap around to prevent overflowing https://learn.microsoft.com/en-us/archive/blogs/msbuild/why-are-build-numbers-limited-to-65535
+      $buildCounter = $buildCounter % 65535
+      $branchName = "$(Build.SourceBranch)"
+      $branchName = $branchName.Replace("refs/heads/", "")
+      $branchName = $branchName.Replace("refs/pull/", "pull/")
+      $trimmedLength = $branchName.Length
+      if($trimmedLength -gt 15) {
+        $trimmedLength = 15
+      }
+      $shortBranchName = $branchName.Substring(0, $trimmedLength).Replace('/', '-').Replace('+', '-').Trim("-")
+
+      # (2 digit) year.month.day
+      $dateVersion = [datetime]::Now.ToString('yy.M.d')
+      Write-Host "##[debug] Adding build id to number"
+
+      if($branchName.Startswith("release/")) {
+        Write-Host "##[debug] Release Branch, not adding prerelease tag"
+        $version = "$($dateVersion).$($buildCounter)"
+      } else {
+        Write-Host "##[debug] Not Release Branch, adding prerelease tag"
+        $version = "$($dateVersion).$($buildCounter)-$($shortBranchName)"
+      }
+
+      Write-Host "##vso[build.updatebuildnumber]$($version)"
+    displayName: Update Build Number
