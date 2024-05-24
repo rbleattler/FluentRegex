@@ -2,6 +2,7 @@ using Builder;
 
 namespace RegExpBuilderTests;
 // TODO: Add tests for each scenario on _groups_ as well
+// TODO: Add complex tests for longer patterns
 public class BuilderTests
 {
   private Builder.Builder _builder;
@@ -13,7 +14,6 @@ public class BuilderTests
   }
 
   [Fact]
-  [Trait("Category", "Builder")]
   public void TestStripParenthesis()
   {
     Assert.Equal("test", _builder.StripParenthesis("(test)"));
@@ -31,11 +31,15 @@ public class BuilderTests
     Assert.Equal(string.Empty, _builder.Build());
   }
 
-  [Fact]
-  public void TestAsNamedCaptureGroup()
+  [Theory]
+  [InlineData("groupName", "value", NamedGroupStyle.AngleBrackets, "(?<groupName>value)")]
+  [InlineData("groupName", "value", NamedGroupStyle.SingleQuote, "(?'groupName'value)")]
+  [InlineData("groupName", "value", NamedGroupStyle.PStyle, "(?P<groupName>value)")]
+
+  public void TestAsNamedCaptureGroup(string groupName, string value, NamedGroupStyle style, string expected)
   {
-    var result = _builder.Add("testValue").AsNamedCaptureGroup("test", NamedGroupStyle.AngleBrackets).Build();
-    Assert.Equal("(?<test>testValue)", result);
+    var result = _builder.Add(value).AsNamedCaptureGroup($"{groupName}", style).Build();
+    Assert.Equal($"{expected}", result);
   }
 
   [Fact]
