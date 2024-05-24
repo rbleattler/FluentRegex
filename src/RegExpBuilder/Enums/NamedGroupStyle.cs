@@ -17,8 +17,50 @@ namespace Builder;
 /// </example>
 public enum NamedGroupStyle
 {
+    /// <summary>
+    /// The named group is enclosed in single quotes.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var namedGroupBuilder = new GroupBuilder("group", "pattern", NamedGroupStyle.SingleQuote);
+    /// var builder = new RegExpBuilder().AddGroup(namedGroupBuilder);
+    /// var pattern = builder.Build();
+    /// Console.WriteLine(pattern);
+    /// // Output:
+    /// // (?'group'pattern)
+    /// </code>
+    /// </example>
+
     SingleQuote,
+
+    /// <summary>
+    /// The named group is enclosed in angle brackets.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var namedGroupBuilder = new GroupBuilder("group", "pattern", NamedGroupStyle.AngleBrackets);
+    /// var builder = new RegExpBuilder().AddGroup(namedGroupBuilder);
+    /// var pattern = builder.Build();
+    /// Console.WriteLine(pattern);
+    /// // Output:
+    /// // (?&lt;group&gt;pattern)
+    /// </code>
+    /// </example>
     AngleBrackets,
+
+    /// <summary>
+    /// The named group is enclosed in angle brackets, preceded by a question mark and the letter 'P'.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// var namedGroupBuilder = new GroupBuilder("group", "pattern", NamedGroupStyle.PStyle);
+    /// var builder = new RegExpBuilder().AddGroup(namedGroupBuilder);
+    /// var pattern = builder.Build();
+    /// Console.WriteLine(pattern);
+    /// // Output:
+    /// // (?P&lt;group&gt;pattern)
+    /// </code>
+    /// </example>
     PStyle,
 
 }
