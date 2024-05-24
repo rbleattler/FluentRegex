@@ -30,9 +30,6 @@ parameters:
   - name: tests
     type: object
     default: [""]
-  - name: enableSonarQube
-    type: boolean
-    default: false
   - name: nugetConfigPath
     type: string
     default: ""
@@ -171,18 +168,6 @@ steps:
       tree /F /A
     displayName: Print Directory Tree
 
-  - task: SonarQubePrepare@5
-    displayName: Configure SonarQube
-    inputs:
-      SonarQube: "SonarQube"
-      scannerMode: "MSBuild"
-      projectKey: "$(System.TeamProject)_$(Build.DefinitionName)"
-      projectName: "$(Build.DefinitionName)"
-      projectVersion: "$(Build.BuildNumber)"
-      extraProperties: |
-        # https://docs.sonarqube.org/latest/analysis/analysis-parameters/
-    condition: and( succeeded(), eq('${{ parameters.enableSonarQube }}', 'true') )
-
   - ${{ if and(ne(parameters.csprojPath, ''), ne(endsWith(parameters.csprojPath, '.csproj'), true)) }}:
       - task: DotNetCoreCLI@2
         displayName: "dotnet build ${{ parameters.csprojPath }}/*.csproj"
@@ -305,13 +290,3 @@ steps:
         env:
           DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
           DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
-
-
-  - task: SonarQubeAnalyze@5
-    displayName: Analyze SonarQube
-    condition: and( succeeded(), eq('${{ parameters.enableSonarQube }}', 'true') )
-
-  - task: SonarQubePublish@5
-    inputs:
-      pollingTimeoutSec: '300'
-    condition: and( succeeded(), eq('${{ parameters.enableSonarQube }}', 'true')
