@@ -29,6 +29,7 @@ extends:
     slnFile: 'RegExpBuilder.sln'
     buildConfiguration: 'Release'
     sdkVersion: '8.x'
+    publishWebProjects: false
     tests:
       - src/RegExpBuilder.Tests/RegExpBuilder.Tests.csproj
 
