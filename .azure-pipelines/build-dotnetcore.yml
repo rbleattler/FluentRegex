@@ -91,7 +91,8 @@ steps:
       } else {
         # If linux, use the corresponding flags
         tree -a -L 2
-      }    displayName: Print Directory Tree
+      }
+    displayName: Print Directory Tree
 
   - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       - task: PowerShell@2
@@ -179,7 +180,8 @@ steps:
       } else {
         # If linux, use the corresponding flags
         tree -a -L 2
-      }    displayName: Print Directory Tree
+      }
+    displayName: Print Directory Tree
 
   - ${{ if and(ne(parameters.csprojPath, ''), ne(endsWith(parameters.csprojPath, '.csproj'), true)) }}:
       - task: DotNetCoreCLI@2
