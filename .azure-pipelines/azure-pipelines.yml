@@ -16,12 +16,14 @@ trigger:
     exclude:
       - README.md
       - CHANGELOG.md
+      - LICENSE
       - .gitignore
       - .gitattributes
       - .vscode
       - .github
       - .azure-pipelines
       - .git
+      - ./docs
 
 steps:
   - template: /.azure-pipelines/set-version-date.yml
