@@ -1,86 +1,89 @@
 # RegExpBuilder
 
-A library for building RegExpPatterns. It is not available as a nuget package yet, because I would like to add some more features to it, before relasing a package. I'm not great at writing regex, so I would really appreciate any feedback if you have any.
+RegExpBuilder is a .NET library for building regular expressions in a readable and understandable way. It's not yet available as a NuGet package as we're still adding more features.
 
-## What is it?
+## Table of Contents
 
-A linq extensions style of building RegExpPatterns in .NET.
-Related Blogpost: [I don't know Regex](http://ideasof.andersaberg.com/idea/17/i-dont-know-regex)
+- [What is RegExpBuilder?](#what-is-regexpbuilder)
+- [Examples](#examples)
+- [Usage](#usage)
+- [Documentation](#documentation)
+- [Feedback and Contributions](#feedback-and-contributions)
 
-## Example
+## What is RegExpBuilder?
 
-**Good code is simple code.**
-Which one of these snippets of code do you want to find in your code?
+RegExpBuilder is a library that provides a LINQ-style approach to building regular expressions in .NET. For more information, check out this related blog post: [I don't know Regex](http://ideasof.andersaberg.com/idea/17/i-dont-know-regex).
 
-`var regEx = {(?:^)[A-Za-z]([A-Za-z]+|(?:\d+))(@{1,1})[A-Za-z]+(.{1,1})[A-Za-z]+(?:$)}`
+## Examples
 
-_or_
+Here are some examples of how you can use RegExpBuilder:
 
-    var builder = new Builder.RegExpBuilder();
-    var r = builder
-    	.StartOfInput()
-        .Letter() // Must start with letter a-z
-    	.Letters() // any number of letters
-        .Or()
-        .Digits() // any number of numbers
-    	.Exactly(1).Of("@")
-    	.Letters() // domain
-    	.Exactly(1).Of(".")
-        .Letters() // top-level domain
-        .EndOfInput()
-        .ToRegExp();
+### Example 1: Email Validation
 
-# How to use it
+```csharp
+var builder = new Builder.RegExpBuilder();
+var r = builder
+    .StartOfInput()
+    .Letter() // Must start with letter a-z
+    .Letters() // any number of letters
+    .Or()
+    .Digits() // any number of numbers
+    .Exactly(1).Of("@")
+    .Letters() // domain
+    .Exactly(1).Of(".")
+    .Letters() // top-level domain
+    .EndOfInput()
+    .ToRegExp();
 
-### Of("Github").Or().Of("BitBucket")
+```
+<!-- TODO: Add output -->
 
-            var builder = new Builder.RegExpBuilder();
-            var r = builder
-                .StartOfLine()
-                .Exactly(1).Of("github")
-                .Or()
-                .Exactly(1).Of("bitbucket")
-                .EndOfLine()
-                .ToRegExp();
+### Example 2: Matching Specific Strings
 
-    		// r.ToString() == "(?:^)(github{1,1}|(?:bitbucket{1,1}))(?:$)"
+Match either "github" or "bitbucket" (`^github|bitbucket$`):
 
-            Assert.IsTrue(r.Match("github").Success, "Found one Github");
-            Assert.IsTrue(r.Match("bitbucket").Success, "Found one Bitbucket");
+```csharp
+var builder = new Builder.RegExpBuilder();
+var r = builder
+    .StartOfInput()
+    .Exactly(1).Of("github")
+    .Or()
+    .Exactly(1).Of("bitbucket")
+    .EndOfInput()
+    .ToRegExp();
+```
 
-            Assert.IsFalse(r.Match("githubgithub").Success, "Oops, Found too Many Github");
-            Assert.IsFalse(r.Match("bitbucketbitbucket").Success, ""Oops, Found too Many Github");
+### Example 3: Finding a Single Digit
 
-### Find one digit
+Match a single digit (`\d`):
 
-    var builder = new Builder.RegExpBuilder();
-        var r = builder
-    			.StartOfLine()
-                .Digit()
-                .EndOfLine()
-                .ToRegExp();
+```csharp
+var builder = new Builder.RegExpBuilder();
+var r = builder
+    .Digit()
+    .ToRegExp();
+```
 
-        r.Match("1").Success; // true
-    	r.Match("11").Success); // false
+### Example 4: Matching Exact String Repetitions
 
-### Exactly().Of("yourString")
+Match "a" repeated exactly 3 times (`a{3}`):
 
-    public void ExactlyOfCustom()
-        {
+```csharp
+var builder = new Builder.RegExpBuilder();
+var r = builder
+    .Exactly(3)
+    .Of("a")
+    .ToRegExp();
+```
 
-            var builder = new Builder.RegExpBuilder();
-            var r = builder
-                .StartOfLine()
-                .Exactly(3)
-                .Of("a")
-                .EndOfLine()
-                .ToRegExp();
+## Usage
 
-            Assert.IsTrue(r.Match("aaa").Success, "Three Letters");
-            Assert.IsFalse(r.Match("aaaa").Success, "four Letters");
-            Assert.IsFalse(r.Match("aa").Success, "two Letters");
-        }
+For more examples, refer to the tests in the `RegExpBuilder.Tests` project.
 
-### There is alot more examples in the test files!
+## Documentation
 
-[RegExpBuilderTests.cs](https://github.com/abergs/RegExpBuilder/blob/master/RegExpBuilderTests/RegExpBuilderTests.cs)
+Additional documentation is available in the `docs` folder. See the [Index](docs/Index.md) file for more information.
+
+## Feedback and Contributions
+
+Any feedback and contributions are appreciated. If you're not great at writing regex, your input can be especially valuable to us!

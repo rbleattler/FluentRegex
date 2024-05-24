@@ -11,6 +11,9 @@ namespace Builder;
 public class RegExpBuilder : Builder
 {
 
+    /// <summary>
+    /// The current expression.
+    /// </summary>
     private List<string> _expressions;
 
     /// <summary>
@@ -130,7 +133,6 @@ public class RegExpBuilder : Builder
         OrLike(regExpression, false, false);
         return this;
     }
-
 
     /// <summary>
     /// Adds an alternative pattern to the regular expression.

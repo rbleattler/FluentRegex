@@ -24,8 +24,6 @@ public abstract class Builder
   /// </summary>
   protected Builder _Builder;
 
-
-
   // Default constructor
   public Builder()
   {
@@ -302,7 +300,6 @@ public abstract class Builder
     return this;
   }
 
-
   /// <summary>
   /// Adds filters to a string.
   /// </summary>
@@ -480,6 +477,9 @@ public abstract class Builder
     }
   }
 
+  /// <summary>
+  /// Resets the regular expression builder.
+  /// </summary>
   public void Reset()
   {
     _expression = string.Empty;

@@ -1,5 +1,4 @@
-﻿
-
+﻿namespace Builder;
 
 /// <param name="Some"></param>
 /// <param name="ZeroOrOne"></param>
