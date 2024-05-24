@@ -23,11 +23,12 @@ trigger:
       - .azure-pipelines
       - .git
 
-stages:
-  - template: ./.azure-pipelines/build-dotnetcore.yml
-    parameters:
-      slnFile: 'RegExpBuilder.sln'
-      buildConfiguration: 'Release'
-      sdkVersion: '8.x'
-      tests:
-        - src/RegExpBuilder.Tests/RegExpBuilder.Tests.csproj
+extends:
+  template: /.azure-pipelines/build-dotnetcore.yml
+  parameters:
+    slnFile: 'RegExpBuilder.sln'
+    buildConfiguration: 'Release'
+    sdkVersion: '8.x'
+    tests:
+      - src/RegExpBuilder.Tests/RegExpBuilder.Tests.csproj
+
