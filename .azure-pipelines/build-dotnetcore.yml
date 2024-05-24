@@ -1,0 +1,317 @@
+parameters:
+  - name: buildConfiguration
+    type: string
+    values:
+      - Debug
+      - Release
+    default: Release
+  - name: csprojPath
+    type: string
+    default: ""
+  - name: slnFile
+    type: string
+    default: ""
+  # Uncomment the following lines to use a VSTS feed (Azure Artifacts)
+  # - name: vstsFeed
+  #   type: string
+  #   default: ""
+  - name: dotnetBuildArguments
+    type: string
+    default: ""
+  - name: runDotnetPublish
+    type: boolean
+    default: true
+  - name: dotnetPublishArguments
+    type: string
+    default: ""
+  - name: sdkVersion
+    type: string
+    default: "8.x"
+  - name: tests
+    type: object
+    default: [""]
+  - name: enableSonarQube
+    type: boolean
+    default: false
+  - name: nugetConfigPath
+    type: string
+    default: ""
+  - name: enableArtifactoryPull
+    type: boolean
+    default: false
+  - name: artifactoryRestoreArgs
+    type: string
+    default: ''
+  - name: isSharedLibrary
+    type: boolean
+    default: false
+  - name: publishWebProjects
+    type: boolean
+    default: true
+  - name: nvmrcPath
+    type: string
+    default: ""
+  - name: nugetDestPath
+    type: string
+    default: ""
+
+steps:
+  # - checkout: templates
+  - task: NuGetToolInstaller@1
+    displayName: Install Latest Nuget.exe
+    inputs:
+      versionSpec:
+      checkLatest: true
+
+  - task: UseDotNet@2
+    displayName: Install DotNet SDK
+    inputs:
+      packageType: "sdk"
+      version: "${{ parameters.sdkVersion }}"
+      installationPath: $(Agent.TempDirectory)/dotnet
+
+  - powershell: |
+      $dotnetVersion = ((dotnet --list-sdks|Sort-Object -Descending) -Split ' ')[0]
+      Write-Host ".NET Version : $dotnetVersion"
+      Write-Host "##vso[task.setvariable variable=dotnetVersion;isoutput=true]$dotnetVersion"
+    name: DotNetVersionVar
+    displayName: Set .NET Version Variable
+
+  - powershell: |
+      Push-Location $ENV:DOTNET_ROOT
+      tree /F /A
+      Pop-Location
+    displayName: Print dotnet_root Tree
+
+  - powershell: |
+      tree /F /A
+    displayName: Print Directory Tree
+
+  - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      - task: PowerShell@2
+        displayName: "Set Assembly Info in all AssemblyInfo.cs"
+        inputs:
+          script: |
+            $assemblyVersionPattern = '\[assembly: AssemblyVersion\("(.*)"\)\]'
+            $assemblyFilePattern = '\[assembly: AssemblyFileVersion\("(.*)"\)\]'
+            $AssemblyFiles = Get-ChildItem -Path $($env:BUILD_SOURCESDIRECTORY) -Filter "AssemblyInfo.cs" -Recurse
+
+            foreach ($file in $AssemblyFiles)
+            {
+              Write-Host "##[debug]Writing version info to $($file.FullName)"
+              (Get-Content $file.FullName) | ForEach-Object {
+                  if ($_ -match "^//") {
+                      # Output line as is
+                      $_
+                  } elseif ($_ -match $assemblyVersionPattern) {
+                      '[assembly: AssemblyVersion("{0}")]' -f $($env:GITVERSION_ASSEMBLYSEMVER)
+                  } elseif ($_ -match $assemblyFilePattern) {
+                      '[assembly: AssemblyFileVersion("{0}")]' -f $($env:GITVERSION_ASSEMBLYSEMFILEVER)
+                  } else {
+                      # Output line as is
+                      $_
+                  }
+              } | Set-Content $file.FullName -Force
+              Get-Content $file.FullName
+            }
+          targetType: "inline"
+
+  - ${{ if ne('', parameters.nvmrcPath) }}:
+    - task: NodeTool@0
+      inputs:
+        versionSource: 'fromFile'
+        versionFilePath: ${{ parameters.nvmrcPath }}
+
+  - ${{ if eq(parameters.enableArtifactoryPull, true) }}:
+      - template: restore-artifactory.yml@templates
+        parameters:
+          sdkVersion: "${{ parameters.sdkVersion }}"
+          ${{ if ne(parameters.csprojPath, '') }}:
+            projectFile: ${{ parameters.csprojPath }}
+          ${{ if ne(parameters.slnFile, '') }}:
+            projectFile: ${{ parameters.slnFile }}
+          ${{ if ne(parameters.nugetConfigPath, '') }}:
+            nugetConfigPath: ${{ parameters.nugetConfigPath }}
+          ${{ if ne(parameters.artifactoryRestoreArgs, '') }}:
+            customArguments: ${{ parameters.artifactoryRestoreArgs }}
+
+  - ${{ if ne(parameters.csprojPath, '') }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet restore **/*.csproj"
+        inputs:
+          command: "restore"
+          projects: "**/*.csproj"
+          # Uncomment the following line to use a VSTS feed (Azure Artifacts)
+          # vstsFeed: ${{ parameters.vstsFeed }}
+          ${{ if ne(parameters.nugetConfigPath, '') }}:
+            feedsToUse: config
+            nugetConfigPath: ${{ parameters.nugetConfigPath }}
+          ${{ else }}:
+            feedsToUse: select
+          ${{ if ne(parameters.nugetDestPath, '') }}:
+            restoreDirectory: ${{ parameters.nugetDestPath }}
+
+  - ${{ if ne(parameters.slnFile, '') }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet restore ${{ parameters.slnFile }}"
+        inputs:
+          command: "restore"
+          projects: "${{ parameters.slnFile }}"
+          # Uncomment the following line to use a VSTS feed
+          # vstsFeed: ${{ parameters.vstsFeed }}
+          ${{ if ne(parameters.nugetConfigPath, '') }}:
+            feedsToUse: config
+            nugetConfigPath: ${{ parameters.nugetConfigPath }}
+          ${{ else }}:
+            feedsToUse: select
+          ${{ if ne(parameters.nugetDestPath, '') }}:
+            restoreDirectory: ${{ parameters.nugetDestPath }}
+
+  - powershell: |
+      tree /F /A
+    displayName: Print Directory Tree
+
+  - task: SonarQubePrepare@5
+    displayName: Configure SonarQube
+    inputs:
+      SonarQube: "SonarQube"
+      scannerMode: "MSBuild"
+      projectKey: "$(System.TeamProject)_$(Build.DefinitionName)"
+      projectName: "$(Build.DefinitionName)"
+      projectVersion: "$(Build.BuildNumber)"
+      extraProperties: |
+        # https://docs.sonarqube.org/latest/analysis/analysis-parameters/
+    condition: and( succeeded(), eq('${{ parameters.enableSonarQube }}', 'true') )
+
+  - ${{ if and(ne(parameters.csprojPath, ''), ne(endsWith(parameters.csprojPath, '.csproj'), true)) }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet build ${{ parameters.csprojPath }}/*.csproj"
+        inputs:
+          command: "build"
+          projects: "${{ parameters.csprojPath }}/*.csproj"
+          ${{ if and(ne(parameters.csprojPath, ''), eq(true, parameters.runDotnetPublish)) }}:
+            arguments: "--configuration ${{ parameters.buildConfiguration }} --no-restore ${{ parameters.dotnetBuildArguments }}"
+          ${{ else }}:
+            arguments: "--configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory) --no-restore ${{ parameters.dotnetBuildArguments }}"
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+
+
+  - ${{ if and(ne(parameters.csprojPath, ''), eq(endsWith(parameters.csprojPath, '.csproj'), true)) }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet build ${{ parameters.csprojPath }}"
+        inputs:
+          command: "build"
+          projects: "${{ parameters.csprojPath }}"
+          ${{ if and(ne(parameters.csprojPath, ''), eq(true, parameters.runDotnetPublish)) }}:
+            arguments: "--configuration ${{ parameters.buildConfiguration }} --no-restore ${{ parameters.dotnetBuildArguments }}"
+          ${{ else }}:
+            arguments: "--configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory) --no-restore ${{ parameters.dotnetBuildArguments }}"
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+
+  - ${{ if and(ne(parameters.csprojPath, ''), eq(true, parameters.runDotnetPublish), eq(endsWith(parameters.csprojPath, '.csproj'), true)) }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet publish ${{ parameters.csprojPath }}"
+        inputs:
+          command: "publish"
+          projects: "${{ parameters.csprojPath }}"
+          arguments: "--configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory) --no-restore ${{ parameters.dotnetPublishArguments }}"
+          zipAfterPublish: false
+          modifyOutputPath: false
+          ${{ if eq(true, parameters.isSharedLibrary) }}:
+            publishWebProjects: false
+          ${{ else }}:
+            publishWebProjects: ${{ parameters.publishWebProjects }}
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+
+
+  - ${{ if and(ne(parameters.csprojPath, ''), eq(true, parameters.runDotnetPublish), ne(endsWith(parameters.csprojPath, '.csproj'), true)) }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet publish ${{ parameters.csprojPath }}/*.csproj"
+        inputs:
+          command: "publish"
+          projects: "${{ parameters.csprojPath }}/*.csproj"
+          arguments: "--configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory) --no-restore ${{ parameters.dotnetPublishArguments }}"
+          zipAfterPublish: false
+          modifyOutputPath: false
+          ${{ if eq(true, parameters.isSharedLibrary) }}:
+            publishWebProjects: false
+          ${{ else }}:
+            publishWebProjects: ${{ parameters.publishWebProjects }}
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+
+
+  - ${{ if ne(parameters.slnFile, '') }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet build ${{ parameters.slnFile }}"
+        inputs:
+          command: "build"
+          projects: ${{ parameters.slnFile }}
+          ${{ if and(ne(parameters.slnFile, ''), eq(true, parameters.runDotnetPublish)) }}:
+            arguments: "--configuration ${{ parameters.buildConfiguration }} --no-restore ${{ parameters.dotnetBuildArguments }}"
+          ${{ else }}:
+            arguments: "--configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory) --no-restore ${{ parameters.dotnetBuildArguments }}"
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+
+
+  - ${{ if and(ne(parameters.slnFile, ''), eq(true, parameters.runDotnetPublish)) }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet publish ${{ parameters.slnFile }}"
+        inputs:
+          command: "publish"
+          projects: ${{ parameters.slnFile }}
+          arguments: "--configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory) --no-restore ${{ parameters.dotnetPublishArguments }}"
+          zipAfterPublish: false
+          ${{ if eq(true, parameters.isSharedLibrary) }}:
+            publishWebProjects: false
+          ${{ else }}:
+            publishWebProjects: ${{ parameters.publishWebProjects }}
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+
+
+  - ${{ if ne(parameters.csprojPath, '') }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet test"
+        inputs:
+          command: "test"
+          projects: "${{ join( '\n', parameters.tests ) }}"
+          arguments: '--configuration ${{ parameters.buildConfiguration }} --no-restore --collect "Code Coverage"'
+          publishTestResults: true
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+        condition: and(succeeded(), ne('${{ join( '\n', parameters.tests ) }}', ''))
+
+
+  - ${{ if ne(parameters.slnFile, '') }}:
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet test"
+        inputs:
+          command: "test"
+          projects: "${{ parameters.slnFile }}"
+          arguments: '--configuration ${{ parameters.buildConfiguration }} --no-restore --collect "Code Coverage"'
+          publishTestResults: true
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+
+
+  - task: SonarQubeAnalyze@5
+    displayName: Analyze SonarQube
+    condition: and( succeeded(), eq('${{ parameters.enableSonarQube }}', 'true') )
+
+  - task: SonarQubePublish@5
+    inputs:
+      pollingTimeoutSec: '300'
+    condition: and( succeeded(), eq('${{ parameters.enableSonarQube }}', 'true')
