@@ -13,6 +13,7 @@ public class BuilderTests
   }
 
   [Fact]
+  [Trait("Category", "Builder")]
   public void TestStripParenthesis()
   {
     Assert.Equal("test", _builder.StripParenthesis("(test)"));
@@ -68,7 +69,7 @@ public class BuilderTests
   [Fact]
   public void TestOneOrMore()
   {
-    var result = _builder.OneOrMore().Add("x").Build();
+    var result = _builder.Add("x").OneOrMore().Build();
     Assert.Equal("x+", result);
   }
 
