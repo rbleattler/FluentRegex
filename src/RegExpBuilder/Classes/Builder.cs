@@ -24,7 +24,13 @@ public abstract class Builder
   /// </summary>
   protected Builder _Builder;
 
-  // Default constructor
+  /// <summary>
+  /// Initializes a new instance of the <see cref="Builder"/> class.
+  /// </summary>
+  /// <remarks>
+  /// Creates a new instance of the <see cref="Builder"/> class.
+  /// </remarks>
+
   public Builder()
   {
     _expression = string.Empty;
