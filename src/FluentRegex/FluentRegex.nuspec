@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>RegExpBuilder</id>
+    <id>FluentRegex</id>
     <version>$version$</version>
     <authors>Rob Bleattler</authors>
     <owners>Rob Bleattler</owners>
@@ -9,8 +9,8 @@
     <description>A package that allows for fluent construction of regular expressions in dotnet.</description>
   </metadata>
   <files>
-    <file src="bin\Release\net8.0\publish\RegExpBuilder.dll" target="lib" />
-    <file src="bin\Release\net8.0\publish\RegExpBuilder.xml" target="lib" />
-    <file src="bin\Release\net8.0\publish\RegExpBuilder.pdb" target="lib" />
+    <file src="bin\Release\net8.0\publish\FluentRegex.dll" target="lib" />
+    <file src="bin\Release\net8.0\publish\FluentRegex.xml" target="lib" />
+    <file src="bin\Release\net8.0\publish\FluentRegex.pdb" target="lib" />
   </files>
 </package>

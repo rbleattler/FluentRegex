@@ -29,10 +29,10 @@ steps:
   - template: /.azure-pipelines/set-version-date.yml
   - template: /.azure-pipelines/build-dotnetcore.yml
     parameters:
-      slnFile: 'RegExpBuilder.sln'
+      slnFile: 'FluentRegex.sln'
       buildConfiguration: 'Release'
       sdkVersion: '8.x'
       publishWebProjects: false
       tests:
-        - src/RegExpBuilder.Tests/RegExpBuilder.Tests.csproj
+        - src/FluentRegex.Tests/FluentRegex.Tests.csproj
 

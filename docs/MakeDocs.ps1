@@ -36,7 +36,7 @@ begin {
   }
 }
 process {
-  $ProjectName = 'RegExpBuilder'
+  $ProjectName = 'FluentRegex'
   $ProjectDotNetVersion = '8.0'
   $ProjectDirectory = Resolve-Path "$PSScriptRoot\..\src\$ProjectName"
   $LibraryPath = '{0}\bin\{1}\net{2}\{3}.dll' -f $ProjectDirectory, $Configuration, $ProjectDotNetVersion, $ProjectName

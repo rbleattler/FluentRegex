@@ -1,4 +1,4 @@
-namespace Builder;
+namespace FluentRegex;
 /// <summary>
 /// Represents a character class in a regular expression pattern.
 /// </summary>
@@ -9,7 +9,7 @@ namespace Builder;
 /// <code>
 /// var classes = new CharacterClasses();
 /// var characterClass = classes.Digit;
-/// var builder = new RegExpBuilder().Add(characterClass);
+/// var builder = new FluentRegex().Add(characterClass);
 /// var pattern = builder.Build();
 /// Console.WriteLine(pattern);
 /// // Output:

@@ -10,9 +10,9 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/src/RegExpBuilderTests/bin/Debug/net8.0/RegExpBuilderTests.dll",
+      "program": "${workspaceFolder}/src/FluentRegexTests/bin/Debug/net8.0/FluentRegexTests.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/src/RegExpBuilderTests",
+      "cwd": "${workspaceFolder}/src/FluentRegexTests",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
       "stopAtEntry": false
