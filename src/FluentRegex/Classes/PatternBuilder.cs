@@ -7,29 +7,30 @@ namespace FluentRegex;
 /// </summary>
 /// <example>
 /// <para>This example shows how to build a regex pattern using the <see cref="PatternBuilder"/> class.</para>
-/// <code language="csharp">
-/// class Program
-/// {
-///   static void Main()
+/// <br/>
+///   <code language="csharp">
+///   class Program
 ///   {
-///     var regexBuilder = new PatternBuilder();
-///     var regex = regexBuilder
-///         .StartAnchor().Build()
-///         .StartGroup()
-///             .AppendLiteral("abc")
-///             .StartCharacterClass()
-///                 .AppendLiteral("0-9")
-///                 .Build()
-///             .StartGroup()
-///                 .AppendLiteral("xyz")
-///                 .EndGroup()
-///             .Build()
-///         .EndAnchor()
-///         .ToString();
-///     Console.WriteLine($"Generated Regex: {regex}");
+///     static void Main()
+///     {
+///       var regexBuilder = new PatternBuilder();
+///       var regex = regexBuilder
+///           .StartAnchor().Build()
+///           .StartGroup()
+///               .AppendLiteral("abc")
+///               .StartCharacterClass()
+///                   .AppendLiteral("0-9")
+///                   .Build()
+///               .StartGroup()
+///                   .AppendLiteral("xyz")
+///                   .EndGroup()
+///               .Build()
+///           .EndAnchor()
+///           .ToString();
+///       Console.WriteLine($"Generated Regex: {regex}");
+///     }
 ///   }
-/// }
-/// </code>
+///   </code>
 /// </example>
 public class PatternBuilder : Builder, IBuilder
 {
@@ -110,6 +111,15 @@ public class PatternBuilder : Builder, IBuilder
     return new CharacterClassBuilder(this);
   }
 
+  /// <summary>
+  /// Appends a literal string to the pattern. Implements <see cref="IBuilder.AppendLiteral(string)"/>.
+  /// </summary>
+  /// <param name="literal">The literal string to append.</param>
+  /// <returns><see cref="PatternBuilder"/></returns>
+  public PatternBuilder AppendLiteral(string literal)
+  {
+    return ((IBuilder)this).AppendLiteral(literal);
+  }
 }
 
 
