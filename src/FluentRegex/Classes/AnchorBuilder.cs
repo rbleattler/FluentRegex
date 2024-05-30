@@ -56,7 +56,7 @@ public class AnchorBuilder : IBuilder
   /// Sets the anchor to <see cref="Anchors.StartOfWord"/>.
   /// </summary>
   /// <returns></returns>
-  public AnchorBuilder StartofWord()
+  public AnchorBuilder StartOfWord()
   {
     Anchor = Anchors.StartOfWord;
     return this;
@@ -66,7 +66,7 @@ public class AnchorBuilder : IBuilder
   /// Sets the anchor to <see cref="Anchors.EndOfWord"/>.
   /// </summary>
   /// <returns></returns>
-  public AnchorBuilder EndofWord()
+  public AnchorBuilder EndOfWord()
   {
     Anchor = Anchors.EndOfWord;
     return this;
@@ -97,7 +97,7 @@ public class AnchorBuilder : IBuilder
   /// Sets the anchor to <see cref="Anchors.EndOfString"/>.
   /// </summary>
   /// <returns></returns>
-  public AnchorBuilder EndofString()
+  public AnchorBuilder EndOfString()
   {
     Anchor = Anchors.EndOfString;
     return this;
@@ -107,7 +107,7 @@ public class AnchorBuilder : IBuilder
   /// Sets the anchor to <see cref="Anchors.EndOfStringNoLineBreak"/>.
   /// </summary>
   /// <returns></returns>
-  public AnchorBuilder EndofStringNoLineBreak()
+  public AnchorBuilder EndOfStringNoLineBreak()
   {
     Anchor = Anchors.EndOfStringNoLineBreak;
     return this;
@@ -139,9 +139,23 @@ public class AnchorBuilder : IBuilder
   /// <summary>
   /// Not implemented.
   /// </summary>
-  public void Validate()
+  void IBuilder.Validate()
   {
     throw new NotImplementedException();
     // ((IBuilder)_regexBuilder).Validate();
+  }
+
+  /// <summary>
+  /// Not implemented.
+  /// </summary>
+  void IBuilder.Validate(bool _)
+  {
+    throw new NotImplementedException();
+    // ((IBuilder)_regexBuilder).Validate();
+  }
+
+  string IBuilder.ToString()
+  {
+    return _pattern.ToString();
   }
 }
