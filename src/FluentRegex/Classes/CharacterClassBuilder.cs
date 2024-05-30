@@ -18,15 +18,15 @@ public class CharacterClassBuilder
   }
 
 
-  public CharacterClassBuilder StartofWord()
+  public CharacterClassBuilder StartOfWord()
   {
     _charClassPattern.Append(CharacterClasses.WordBoundary);
     return this;
   }
 
-  public CharacterClassBuilder EndofWord()
+  public CharacterClassBuilder EndOfWord()
   {
-    return StartofWord();
+    return StartOfWord();
   }
 
   public CharacterClassBuilder NonWordBoundary()
@@ -43,7 +43,7 @@ public class CharacterClassBuilder
 
   public CharacterClassBuilder EndOfStringNoLineBreak()
   {
-    _charClassPattern.Append(CharacterClasses.EndOfStringNoLineBreak);
+    _charClassPattern.Append(CharacterClasses.EndOfString);
     return this;
   }
 
