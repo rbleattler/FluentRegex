@@ -87,7 +87,21 @@ public interface IBuilder
   /// <exception cref="InvalidOperationException"></exception>
   internal void ValidateStart()
   {
-    var badStartChars = new char[] { '*', '+', '?', '|', '}', ')', ']' };
+    var badStartChars = new char[]
+    {
+
+// This is here because bracket colorizing was irritating me.
+#if _ == true
+        '{'
+#endif
+        '*',
+        '+',
+        '?',
+        '|',
+        '}',
+        ')',
+        ']'
+    };
     var pattern = Pattern.ToString();
     if (badStartChars.Contains(pattern[0]))
       throw new InvalidOperationException("The pattern cannot start with a '" + pattern[0] + "' character.");
