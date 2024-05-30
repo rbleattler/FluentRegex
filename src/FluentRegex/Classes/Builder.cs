@@ -144,7 +144,9 @@ public abstract class Builder : IBuilder
   /// </summary>
   public dynamic ZeroOrMore()
   {
-    switch (Pattern.ToString().Last())
+    var lastCharacter = Pattern.Length > 0 ? Pattern.ToString()[Pattern.Length - 1] : '\0';
+
+    switch (lastCharacter)
     {
       case '*':
         throw new InvalidOperationException("Cannot apply greedy quantifier to a zero or more quantifier.");
