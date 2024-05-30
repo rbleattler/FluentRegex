@@ -1,5 +1,8 @@
 namespace FluentRegex;
 
+/// <summary>
+/// Represents the type of group in a regular expression pattern.
+/// </summary>
 public enum GroupType
 {
   /// <summary>
