@@ -42,7 +42,15 @@ public abstract class Builder : IBuilder
   /// </summary>
   public override string ToString()
   {
-    Validate();
+    var type = GetType();
+    if (type != typeof(GroupBuilder))
+      Validate();
+    else
+    {
+      var groupStyle = ((GroupBuilder)this).GroupStyle;
+      if (groupStyle == NamedGroupStyle.PStyle)
+        Validate(true);
+    }
     return Pattern.ToString();
   }
 
@@ -83,13 +91,13 @@ public abstract class Builder : IBuilder
         Pattern.Append(string.Empty);
         break;
       case (0, -1):
-        Pattern.Append("*");
+        Pattern.Append('*');
         break;
       case (1, -1):
-        Pattern.Append("+");
+        Pattern.Append('+');
         break;
       case (0, 1):
-        Pattern.Append("?");
+        Pattern.Append('?');
         break;
       case var (min, max) when min == max:
         Pattern.Append($"{{{min}}}");
@@ -114,7 +122,7 @@ public abstract class Builder : IBuilder
   /// </summary>
   public dynamic Lazy()
   {
-    Pattern.Append("?");
+    Pattern.Append('?');
     return this;
   }
 
@@ -127,7 +135,7 @@ public abstract class Builder : IBuilder
       throw new InvalidOperationException("Cannot apply one or more quantifier to a zero or one quantifier.");
     if (Pattern.ToString().EndsWith("*"))
       throw new InvalidOperationException("Cannot apply one or more quantifier to a zero or one quantifier.");
-    Pattern.Append("+");
+    Pattern.Append('+');
     return this;
   }
 
@@ -147,7 +155,7 @@ public abstract class Builder : IBuilder
       case '}':
         throw new InvalidOperationException("Cannot apply greedy quantifier to a custom quantifier.");
       default:
-        Pattern.Append("*");
+        Pattern.Append('*');
         break;
     }
     return this;
@@ -158,7 +166,7 @@ public abstract class Builder : IBuilder
   /// </summary>
   public dynamic ZeroOrOne()
   {
-    Pattern.Append("?");
+    Pattern.Append('?');
     return this;
   }
 
@@ -167,132 +175,39 @@ public abstract class Builder : IBuilder
   /// </summary>
   public dynamic Or()
   {
-    Pattern.Append("|");
+    Pattern.Append('|');
     return this;
   }
 
   /// <summary>
-  /// Validates the pattern to ensure it is well-formed. Each validation method contains explicit error messages which are thrown when the validation fails. This should help the user to understand what is wrong with the pattern, rather than just throwing a generic exception. However the final validation method checks that the pattern is a valid regular expression, and throws a generic exception if it is not, bubbling up the error message from the regular expression engine.
+  /// Validates the pattern to ensure it does not end with any characters that would cause an exception when building the regular expression. Allows the user to skip the regular expression validation.
   /// </summary>
+  /// <param name="skipRegexValidation">
+  /// A <see cref="bool"/> value to skip the regular expression validation.
+  ///</param>
+  public void Validate(bool skipRegexValidation)
+  {
+    var type = GetType();
+    var patternIsPGroup = Pattern.ToString().StartsWith("(?P<");
+    var isPTypeGroup = type == typeof(GroupBuilder) && ((GroupBuilder)this).GroupStyle == NamedGroupStyle.PStyle;
+    if (patternIsPGroup || type == typeof(GroupBuilder) && isPTypeGroup)
+    {
+      //TODO: Add validation for PType groups by converting it to an AngleBracket style group and validating it.
+      skipRegexValidation = true;
+    }
+
+    ((IBuilder)this).ValidateNoUnEscapedCharacters();
+    ((IBuilder)this).ValidateParenthesesPairs();
+    ((IBuilder)this).ValidateStart();
+    ((IBuilder)this).ValidateEnd();
+    ((IBuilder)this).ValidateNoEmptyStructures();
+    if (!skipRegexValidation)
+      ((IBuilder)this).ValidatePatternRegex();
+  }
+
+  /// <inheritdoc/>
   public void Validate()
   {
-    ValidateNoUnEscapedCharacters();
-    ValidateParenthesesPairs();
-    ValidateStart();
-    ValidateEnd();
-    ValidateNoEmptyStructures();
-    ValidatePatternRegex();
+    Validate(false);
   }
-
-  /// <summary>
-  /// Validates the pattern to ensure it does not end with any characters that would cause an exception when building the regular expression.
-  /// </summary>
-  internal void ValidateEnd()
-  {
-    var badEndChars = new char[] { '|', '{', '(', '[' };
-    var pattern = Pattern.ToString();
-    if (badEndChars.Contains(pattern[pattern.Length - 1]))
-      throw new InvalidOperationException("The pattern cannot end with a '" + pattern[pattern.Length - 1] + "' character.");
-  }
-
-  /// <summary>
-  /// Validates the pattern to ensure it does not start with any characters that would cause an exception when building the regular expression.
-  /// </summary>
-  /// <exception cref="InvalidOperationException"></exception>
-  internal void ValidateStart()
-  {
-    var badStartChars = new char[] { '*', '+', '?', '|', '}', ')', ']' };
-    var pattern = Pattern.ToString();
-    if (badStartChars.Contains(pattern[0]))
-      throw new InvalidOperationException("The pattern cannot start with a '" + pattern[0] + "' character.");
-  }
-
-  /// <summary>
-  /// Validates the pattern to ensure that the number of opening and closing parentheses match.
-  /// </summary>
-  /// <exception cref="InvalidOperationException"></exception>
-  internal void ValidateParenthesesPairs()
-  {
-    var pattern = Pattern.ToString();
-    var openParenthesesCount = 0;
-    var closeParenthesesCount = 0;
-
-    foreach (var character in pattern)
-    {
-      if (character == '(')
-      {
-        if (pattern.IndexOf(character) == 0)
-        {
-          openParenthesesCount++;
-        }
-        if (pattern.IndexOf(character) > 0 && pattern[pattern.IndexOf(character) - 1] != '\\')
-          openParenthesesCount++;
-      }
-      if (character == ')')
-      {
-        if (pattern.IndexOf(character) > 0 && pattern[pattern.IndexOf(character) - 1] != '\\')
-          closeParenthesesCount++;
-      }
-    }
-    if (openParenthesesCount != closeParenthesesCount)
-      throw new InvalidOperationException("The number of opening and closing parentheses do not match.");
-  }
-
-  /// <summary>
-  /// Validates the pattern to ensure it does not contain empty structures. Including empty parentheses, empty non-capturing groups, and empty named capturing groups, empty Character classes.
-  /// /// </summary>
-  internal void ValidateNoEmptyStructures()
-  {
-    var pattern = Pattern.ToString();
-
-    if (pattern.Contains("()"))
-      throw new InvalidOperationException("Empty parentheses are not allowed.");
-
-    if (pattern.Contains("(?:)"))
-      throw new InvalidOperationException("Empty non-capturing group is not allowed.");
-
-    if (
-      pattern.Contains("(?<>)") |
-      pattern.Contains("(?P<>)") |
-      pattern.Contains("(?'')")
-      )
-      throw new InvalidOperationException("Empty named capturing group is not allowed.");
-
-  }
-
-  /// <summary>
-  /// Validates the pattern to ensure there are no unescaped characters that are not escapable.
-  /// </summary>
-  internal void ValidateNoUnEscapedCharacters()
-  {
-    var pattern = Pattern.ToString();
-    var escapableCharacters = new char[] { '\\', '.', '^', '$', '*', '+', '?', '(', ')', '[', ']', '{', '}', '|', '<', '>', '-', ' ' };
-    // Check for instances of '\' where the next character is not a character that can be escaped.
-    for (int i = 0; i < pattern.Length; i++)
-    {
-      if (pattern[i] == '\\')
-      {
-        if (!escapableCharacters.Contains(pattern[i + 1]))
-          throw new InvalidOperationException("The character following the escape character is not escapable, or the '\\' is out of place. Check the pattern at index " + i + 1 + ".");
-      }
-    }
-
-  }
-
-  /// <summary>
-  /// Validates the pattern to ensure it is a valid regular expression.
-  /// </summary>
-  internal void ValidatePatternRegex()
-  {
-    var pattern = Pattern.ToString();
-    try
-    {
-      _ = new System.Text.RegularExpressions.Regex(pattern);
-    }
-    catch (ArgumentException ex)
-    {
-      throw new ArgumentException("The pattern is invalid.", ex);
-    }
-  }
-
 }

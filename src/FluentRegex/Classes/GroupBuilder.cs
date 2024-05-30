@@ -4,7 +4,7 @@ namespace FluentRegex;
 /// <summary>
 /// Class <c>GroupBuilder</c> builds groups for a regular expression pattern. Inherits from <see cref="Builder"/>.
 /// </summary>
-public class GroupBuilder : Builder, IBuilder
+public class GroupBuilder : Builder
 {
   /// <summary>
   /// Gets or sets the pattern.
@@ -112,12 +112,12 @@ public class GroupBuilder : Builder, IBuilder
   }
 
   /// <summary>
-  /// Initializes a new instance of the <see cref="GroupBuilder"/> class which is used to build a group inline.
+  /// Starts building the group by adding an opening parenthesis to the pattern. Depending on the <see cref="GroupType"/>, the method will add the appropriate syntax to the pattern.
   /// </summary>
   /// <returns> A new instance of the <see cref="GroupBuilder"/> class. </returns>
   public override GroupBuilder StartGroup()
   {
-    _pattern.Append("(");
+    _pattern.Append('(');
     switch (GroupType)
     {
       case GroupType.Capturing:
@@ -126,23 +126,23 @@ public class GroupBuilder : Builder, IBuilder
         _pattern.Append("?:");
         break;
       case GroupType.NamedCapturing:
-        _pattern.Append("?");
+        _pattern.Append('?');
         switch (GroupStyle)
         {
           case NamedGroupStyle.AngleBrackets:
-            _pattern.Append("<");
+            _pattern.Append('<');
             _pattern.Append(GroupName);
-            _pattern.Append(">");
+            _pattern.Append('>');
             break;
           case NamedGroupStyle.PStyle:
             _pattern.Append("P<");
             _pattern.Append(GroupName);
-            _pattern.Append(">");
+            _pattern.Append('>');
             break;
           case NamedGroupStyle.SingleQuote:
-            _pattern.Append("\'");
+            _pattern.Append('\'');
             _pattern.Append(GroupName);
-            _pattern.Append("\'");
+            _pattern.Append('\'');
             break;
           default:
             break;
@@ -173,27 +173,38 @@ public class GroupBuilder : Builder, IBuilder
   }
 
   /// <summary>
-  /// The <c>AppendLiteral</c> method appends a string to the pattern. This hides the <see cref="Builder.AppendLiteral(string)"/> method from the base class.
+  /// The <c>AppendLiteral</c> method appends a string to the pattern. This hides the <see cref="IBuilder.AppendLiteral(string)"/> method from the base class.
   /// </summary>
   /// <param name="literal"></param>
-  /// <returns></returns>
-  public new GroupBuilder AppendLiteral(string literal)
+  /// <returns><see cref="GroupBuilder"/></returns>
+  public GroupBuilder AppendLiteral(string literal)
   {
-    var outLiteral = String.Empty;
-    foreach (var character in literal)
-    {
-      if (_specialCharacters.Contains(character))
-        outLiteral += @"\" + character;
-      else
-        outLiteral += character;
-    }
-    Pattern.Append(outLiteral); return this;
+    return ((IBuilder)this).AppendLiteral(literal);
+    // var outLiteral = string.Empty;
+    // foreach (var character in literal)
+    // {
+    //   if (_specialCharacters.Contains(character))
+    //     outLiteral += @"\" + character;
+    //   else
+    //     outLiteral += character;
+    // }
+    // Pattern.Append(outLiteral);
+    // return this;
   }
 
   internal GroupBuilder EndGroup()
   {
-    _pattern.Append(")");
+    _pattern.Append(')');
     return this;
+  }
+
+  internal new void Validate()
+  {
+    if (GroupStyle != NamedGroupStyle.PStyle)
+      ((Builder)this).Validate();
+    else
+      Validate(skipRegexValidation: true);
+
   }
 
 }
