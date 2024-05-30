@@ -19,7 +19,8 @@ begin {
       Write-Debug "$_ : $($PSBoundParameters.Item($_).GetType())"
     }
   }
-  $IsDotnetInstalled = $env:DOTNET_ROOT -ne $null
+  $isDotnetInstalledInDefaultPath = Test-Path -Path "$ENV:ProgramFiles\dotnet\dotnet.exe"
+  $IsDotnetInstalled = $null -ne $env:DOTNET_ROOT -or $isDotnetInstalledInDefaultPath
   if (-not $IsDotnetInstalled) {
     Write-Error "The .NET SDK is not installed. Please install the .NET SDK and set the DOTNET_ROOT environment variable."
     exit 1
