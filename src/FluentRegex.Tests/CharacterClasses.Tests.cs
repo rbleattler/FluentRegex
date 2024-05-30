@@ -5,7 +5,7 @@ namespace FluentRegexTests;
 public class CharacterClassesTests
 {
 
-  [Fact]
+  [Fact(DisplayName = "Ensure Character Classes are Correct")]
   public void TestCharacterClasses()
   {
     Assert.Equal("[a-z]", CharacterClasses.LowercaseLetter);

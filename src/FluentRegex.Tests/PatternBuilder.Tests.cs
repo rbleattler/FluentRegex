@@ -8,45 +8,56 @@ public class PatternBuilderTests
 {
 
   private PatternBuilder _patternBuilder;
+  private string result;
 
   public PatternBuilderTests()
   {
+    result = "";
     _patternBuilder = new PatternBuilder();
   }
 
   [Fact]
   public void TestStartGroup()
   {
-    _patternBuilder
-    .StartGroup()
-      .AppendLiteral("test")
-      .Build();
-    Assert.Equal("(test)", _patternBuilder.ToString());
+    result = _patternBuilder.StartGroup()
+                            .AppendLiteral("test")
+                            .Build()
+                            .ToString();
+    Assert.Equal("(test)", result);
   }
 
   [Fact]
   public void TestCaptureGroup()
   {
-    _patternBuilder.CaptureGroup().AppendLiteral("test").Build();
-    Assert.Equal("(test)", _patternBuilder.ToString());
+    result = _patternBuilder.CaptureGroup()
+                            .AppendLiteral("test")
+                            .Build()
+                            .ToString();
+    Assert.Equal("(test)", result);
   }
 
   [Fact]
   public void TestNonCaptureGroup()
   {
-    _patternBuilder.NonCaptureGroup().AppendLiteral("test").Build();
-    Assert.Equal("(?:test)", _patternBuilder.ToString());
+    result = _patternBuilder.NonCaptureGroup()
+                            .AppendLiteral("test")
+                            .Build()
+                            .ToString();
+    Assert.Equal("(?:test)", result);
   }
 
 
   [Theory]
-  [InlineData(NamedGroupStyle.AngleBrackets, "testGroup", "content", "(?<testGroup>test)")]
-  [InlineData(NamedGroupStyle.SingleQuote, "testGroup", "content", "(?'testGroup'test)")]
-  [InlineData(NamedGroupStyle.PStyle, "testGroup", "content", "(?P<testGroup>test)")]
+  [InlineData(NamedGroupStyle.AngleBrackets, "testGroup", "content", "(?<testGroup>content)")]
+  [InlineData(NamedGroupStyle.SingleQuote, "testGroup", "content", "(?'testGroup'content)")]
+  [InlineData(NamedGroupStyle.PStyle, "testGroup", "content", "(?P<testGroup>content)")]
   public void TestNamedCaptureGroup(NamedGroupStyle style, string groupName, string content, string expected)
   {
-    _patternBuilder.NamedCaptureGroup(style, groupName).AppendLiteral(content).Build();
-    Assert.Equal(expected, _patternBuilder.ToString());
+    result = _patternBuilder.NamedCaptureGroup(style, groupName)
+                            .AppendLiteral(content)
+                            .Build()
+                            .ToString();
+    Assert.Equal(expected, result);
   }
 
 
@@ -55,20 +66,32 @@ public class PatternBuilderTests
   {
     //TODO: Can I do this with class data iteratively?
 
-    _patternBuilder.StartAnchor().StartOfLine().Build();
-    Assert.Equal("^", _patternBuilder.ToString());
+    result = _patternBuilder.StartAnchor()
+                            .StartOfLine()
+                            .Build()
+                            .ToString();
+    Assert.Equal("^", result);
     _patternBuilder.Pattern.Clear();
 
-    _patternBuilder.StartAnchor().EndOfLine().Build();
-    Assert.Equal("$", _patternBuilder.ToString());
+    result = _patternBuilder.StartAnchor()
+                            .EndOfLine()
+                            .Build()
+                            .ToString();
+    Assert.Equal("$", result);
     _patternBuilder.Pattern.Clear();
 
-    _patternBuilder.StartAnchor().StartofWord().Build();
-    Assert.Equal(@"\b", _patternBuilder.ToString());
+    result = _patternBuilder.StartAnchor()
+                            .StartOfWord()
+                            .Build()
+                            .ToString();
+    Assert.Equal(@"\b", result);
     _patternBuilder.Pattern.Clear();
 
-    _patternBuilder.StartAnchor().EndofWord().Build();
-    Assert.Equal(@"\B", _patternBuilder.ToString());
+    result = _patternBuilder.StartAnchor()
+                            .EndOfWord()
+                            .Build()
+                            .ToString();
+    Assert.Equal(@"\b", result);
     _patternBuilder.Pattern.Clear();
 
   }
@@ -76,8 +99,10 @@ public class PatternBuilderTests
   [Fact]
   public void TestBuild()
   {
-    ((IBuilder)_patternBuilder).AppendLiteral("test").Build();
-    Assert.Equal("test", _patternBuilder.ToString());
+    result = _patternBuilder.AppendLiteral("test")
+                    .Build()
+                    .ToString();
+    Assert.Equal("test", result);
   }
 
 
