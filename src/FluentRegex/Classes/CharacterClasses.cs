@@ -1,3 +1,4 @@
+using System.Linq;
 using System.ComponentModel;
 
 namespace FluentRegex;
@@ -108,6 +109,26 @@ public static class CharacterClasses
   /// <summary>
   /// Represents the end of string character class \z.
   /// </summary>
-  [Description("EndOfStringNoLineBreak is not a character class, but an anchor")]
+  ///   [Description("EndOfString is not a character class, but an anchor")]
   public static readonly string EndOfStringNoLineBreak = Anchors.EndOfStringNoLineBreak;
+  // internal static List<string> GetCharacterClasses()
+  // {
+  //   List<string> characterClasses = new List<string>();
+  //   foreach (var property in typeof(CharacterClasses).GetProperties())
+  //   {
+  //     if (property.PropertyType == typeof(string))
+  //     {
+  //       var value = property.GetValue(null);
+  //       if (value != null)
+  //       {
+  //         string valueAsString = value.ToString() ?? string.Empty;
+  //         if (!string.IsNullOrEmpty(valueAsString))
+  //         {
+  //           characterClasses.Add(valueAsString);
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return characterClasses;
+  // }
 }
