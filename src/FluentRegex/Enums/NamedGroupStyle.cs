@@ -1,4 +1,4 @@
-namespace Builder;
+namespace FluentRegex;
 /// <summary>
 /// Represents the style of a named group in a regular expression pattern.
 /// </summary>
@@ -8,7 +8,7 @@ namespace Builder;
 /// <example>
 /// <code>
 /// var namedGroupBuilder = new GroupBuilder("group", "pattern", NamedGroupStyle.AngleBrackets);
-/// var builder = new RegExpBuilder().AddGroup(namedGroupBuilder);
+/// var builder = new FluentRegex().AddGroup(namedGroupBuilder);
 /// var pattern = builder.Build();
 /// Console.WriteLine(pattern);
 /// // Output:
@@ -23,7 +23,7 @@ public enum NamedGroupStyle
     /// <example>
     /// <code>
     /// var namedGroupBuilder = new GroupBuilder("group", "pattern", NamedGroupStyle.SingleQuote);
-    /// var builder = new RegExpBuilder().AddGroup(namedGroupBuilder);
+    /// var builder = new FluentRegex().AddGroup(namedGroupBuilder);
     /// var pattern = builder.Build();
     /// Console.WriteLine(pattern);
     /// // Output:
@@ -39,7 +39,7 @@ public enum NamedGroupStyle
     /// <example>
     /// <code>
     /// var namedGroupBuilder = new GroupBuilder("group", "pattern", NamedGroupStyle.AngleBrackets);
-    /// var builder = new RegExpBuilder().AddGroup(namedGroupBuilder);
+    /// var builder = new FluentRegex().AddGroup(namedGroupBuilder);
     /// var pattern = builder.Build();
     /// Console.WriteLine(pattern);
     /// // Output:
@@ -54,7 +54,7 @@ public enum NamedGroupStyle
     /// <example>
     /// <code>
     /// var namedGroupBuilder = new GroupBuilder("group", "pattern", NamedGroupStyle.PStyle);
-    /// var builder = new RegExpBuilder().AddGroup(namedGroupBuilder);
+    /// var builder = new FluentRegex().AddGroup(namedGroupBuilder);
     /// var pattern = builder.Build();
     /// Console.WriteLine(pattern);
     /// // Output:

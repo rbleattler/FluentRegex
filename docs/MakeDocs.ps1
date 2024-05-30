@@ -19,7 +19,8 @@ begin {
       Write-Debug "$_ : $($PSBoundParameters.Item($_).GetType())"
     }
   }
-  $IsDotnetInstalled = $env:DOTNET_ROOT -ne $null
+  $isDotnetInstalledInDefaultPath = Test-Path -Path "$ENV:ProgramFiles\dotnet\dotnet.exe"
+  $IsDotnetInstalled = $null -ne $env:DOTNET_ROOT -or $isDotnetInstalledInDefaultPath
   if (-not $IsDotnetInstalled) {
     Write-Error "The .NET SDK is not installed. Please install the .NET SDK and set the DOTNET_ROOT environment variable."
     exit 1
@@ -36,7 +37,7 @@ begin {
   }
 }
 process {
-  $ProjectName = 'RegExpBuilder'
+  $ProjectName = 'FluentRegex'
   $ProjectDotNetVersion = '8.0'
   $ProjectDirectory = Resolve-Path "$PSScriptRoot\..\src\$ProjectName"
   $LibraryPath = '{0}\bin\{1}\net{2}\{3}.dll' -f $ProjectDirectory, $Configuration, $ProjectDotNetVersion, $ProjectName

@@ -14,6 +14,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="Xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+    <Compile Remove="scratch\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RegExpBuilder\RegExpBuilder.csproj"/>
+    <ProjectReference Include="..\FluentRegex\FluentRegex.csproj" />
   </ItemGroup>
 
 </Project>
