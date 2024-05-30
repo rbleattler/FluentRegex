@@ -10,6 +10,7 @@ scratch/
 *.user
 *.sln.docstates
 .vscode/settings.json
+*.code-workspace
 
 # Build results
 
