@@ -13,8 +13,8 @@ namespace FluentRegex;
 ///   {
 ///     static void Main()
 ///     {
-///       var regexBuilder = new PatternBuilder();
-///       var regex = regexBuilder
+///       var patternBuilder = new PatternBuilder();
+///       var regex = patternBuilder
 ///           .StartAnchor().Build()
 ///           .StartGroup()
 ///               .AppendLiteral("abc")
@@ -63,44 +63,6 @@ public class PatternBuilder : Builder, IBuilder
   {
     return new AnchorBuilder(this);
   }
-
-  /// <summary>
-  /// Adds a <see cref="GroupBuilder"/> to the pattern.
-  /// </summary>
-  /// <returns><see cref="GroupBuilder"/></returns>
-  ///
-  public override GroupBuilder StartGroup()
-  {
-    return CaptureGroup();
-  }
-
-  /// <summary>
-  /// Adds a <see cref="GroupBuilder"/> to the pattern.
-  /// </summary>
-  /// <returns><see cref="GroupBuilder"/></returns>
-  public GroupBuilder CaptureGroup()
-  {
-    return new GroupBuilder(this);
-  }
-
-  /// <summary>
-  /// Adds a <see cref="GroupBuilder"/> to the pattern.
-  /// </summary>
-  public GroupBuilder NonCaptureGroup()
-  {
-    return new GroupBuilder(this, GroupType.NonCapturing);
-  }
-
-  /// <summary>
-  /// Adds a <see cref="GroupBuilder"/> to the pattern.
-  /// </summary>
-  /// <param name="namedGroupStyle"></param>
-  /// <param name="groupName"></param>
-  public GroupBuilder NamedCaptureGroup(NamedGroupStyle namedGroupStyle = NamedGroupStyle.AngleBrackets, string? groupName = null)
-  {
-    return new GroupBuilder(this, namedGroupStyle, groupName);
-  }
-
 
   /// <summary>
   /// Adds a <see cref="CharacterClassBuilder"/> to the pattern.
