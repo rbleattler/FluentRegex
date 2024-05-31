@@ -53,11 +53,11 @@ begin {
       }
       'Publish' {
         Write-Host "Publishing..." -ForegroundColor Yellow &&
-        dotnet publish $PSScriptRoot\..\src\RegExpBuilder\RegExpBuilder.csproj --configuration $Configuration /p:Version="$Version" /p:InformationalVersion="$Version-local"
+        dotnet publish $PSScriptRoot\..\src\FluentRegex\FluentRegex.csproj --configuration $Configuration /p:version="$Version" /p:PackageVersion="$Version" /p:InformationalVersion="$Version-local"
       }
       'Pack' {
         Write-Host "Packaging..." -ForegroundColor Yellow &&
-        dotnet pack $PSScriptRoot\..\src\RegExpBuilder\RegExpBuilder.csproj --output $OutputDirectory -p:NuspecFile=$PSScriptRoot\..\src\RegExpBuilder\RegExpBuilder.nuspec -p:version="$Version" /p:PackageVersion="$Version" /p:PackageReleaseNotes="Local build" /p:PackageTags="local"
+        dotnet pack $PSScriptRoot\..\src\FluentRegex\FluentRegex.csproj --output $OutputDirectory -p:NuspecFile=$PSScriptRoot\..\src\FluentRegex\FluentRegex.nuspec -p:version="$($Version)" /p:PackageVersion="$($Version)" /p:PackageReleaseNotes="Local build" /p:PackageTags="local"
       }
       default {
         Write-Warning "I'm not sure what you're trying to do here... But we're going to assume it's 'Everything' and start over..."
