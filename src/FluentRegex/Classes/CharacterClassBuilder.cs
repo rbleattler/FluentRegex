@@ -2,162 +2,210 @@ using System.Diagnostics;
 using System.Text;
 namespace FluentRegex;
 
+/// <summary>
+/// Builds a character class for a regular expression pattern. Inherits from <see cref="IBuilder"/>.
+/// </summary>
 public class CharacterClassBuilder
 {
 
   private readonly Builder _patternBuilder;
   private StringBuilder _characterClassPattern = new StringBuilder();
 
+  //TODO: Remove the PatternBuilder and GroupBuilder constructors or find a better way to accomplish what I'm doing with dynamic
+  /// <summary>
+  /// Initializes a new instance of the <see cref="CharacterClassBuilder"/> class.
+  /// </summary>
+  public CharacterClassBuilder(dynamic builder)
+  {
+    _patternBuilder = builder;
+  }
+
+  /// <summary>
+  /// Initializes a new instance of the <see cref="CharacterClassBuilder"/> class.
+  /// </summary>
   public CharacterClassBuilder(PatternBuilder patternBuilder)
   {
     _patternBuilder = patternBuilder;
   }
 
+  /// <summary>
+  /// Initializes a new instance of the <see cref="CharacterClassBuilder"/> class.
+  /// </summary>
   public CharacterClassBuilder(GroupBuilder groupBuilder)
   {
     _patternBuilder = groupBuilder;
   }
 
-  public dynamic Build()
+  /// <summary>
+  /// Builds the character class.
+  /// </summary>
+  public IBuilder Build()
   {
     _ = _patternBuilder.Pattern.Append(_characterClassPattern.ToString()!);
     return _patternBuilder;
   }
 
+  /// <summary>
+  /// Creates and returns a new instance of the <see cref="CustomCharacterClassBuilder"/> class.
+  /// </summary>
   public CustomCharacterClassBuilder StartCustomPattern()
   {
     return new CustomCharacterClassBuilder(this);
   }
 
-  // public CharacterClassBuilder CharacterInRange(char start, char end)
-  // {
-  //   _charClassPattern.Append(start);
-  //   _charClassPattern.Append('-');
-  //   _charClassPattern.Append(end);
-  //   return this;
-  // }
-
-  // public CharacterClassBuilder CharacterNotInRange(char start, char end)
-  // {
-  //   _charClassPattern.Append('[');
-  //   _charClassPattern.Append('^');
-  //   _charClassPattern.Append(start);
-  //   _charClassPattern.Append('-');
-  //   _charClassPattern.Append(end);
-  //   return this;
-  // }
-
+  /// <summary>
+  /// Appends a literal string to the character class.
+  /// </summary>
   public CharacterClassBuilder AppendLiteral(string literal)
   {
-    _characterClassPattern.Append(literal);
+    _ = _characterClassPattern.Append(literal);
     return this;
   }
 
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.WordBoundary"/> ('\b') to the character class.
+  /// </summary>
   public CharacterClassBuilder StartOfWord()
   {
-    _characterClassPattern.Append(CharacterClasses.WordBoundary);
+    _ = _characterClassPattern.Append(CharacterClasses.WordBoundary);
     return this;
   }
 
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.WordBoundary"/> ('\b') to the character class.
+  /// </summary>
   public CharacterClassBuilder EndOfWord()
   {
     return StartOfWord();
   }
 
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.NonWordBoundary"/> ('\B') to the character class.
+  /// </summary>
   public CharacterClassBuilder NonWordBoundary()
   {
-    _characterClassPattern.Append(CharacterClasses.NonWordBoundary);
+    _ = _characterClassPattern.Append(CharacterClasses.NonWordBoundary);
     return this;
   }
 
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.NonWordBoundary"/> ('\B') to the character class.
+  /// </summary>
   public CharacterClassBuilder EndOfString()
   {
-    _characterClassPattern.Append(CharacterClasses.EndOfString);
+    _ = _characterClassPattern.Append(CharacterClasses.EndOfString);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.EndOfStringNoLineBreak"/> ('\z') to the character class.
+  /// </summary>
   public CharacterClassBuilder EndOfStringNoLineBreak()
   {
-    _characterClassPattern.Append(CharacterClasses.EndOfStringNoLineBreak);
+    _ = _characterClassPattern.Append(CharacterClasses.EndOfStringNoLineBreak);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.AnyCharacter"/> ('.') to the character class.
+  /// </summary>
   public CharacterClassBuilder AnyCharacter()
   {
-    _characterClassPattern.Append(CharacterClasses.AnyCharacter);
+    _ = _characterClassPattern.Append(CharacterClasses.AnyCharacter);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.Digit"/> ('\d') to the character class.
+  /// </summary>
   public CharacterClassBuilder Digit()
   {
-    _characterClassPattern.Append(CharacterClasses.Digit);
+    _ = _characterClassPattern.Append(CharacterClasses.Digit);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.NonDigit"/> ('\D') to the character class.
+  /// </summary>
   public CharacterClassBuilder NonDigit()
   {
-    _characterClassPattern.Append(CharacterClasses.NonDigit);
+    _ = _characterClassPattern.Append(CharacterClasses.NonDigit);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.Whitespace"/> ('\s') to the character class.
+  /// </summary>
   public CharacterClassBuilder Whitespace()
   {
-    _characterClassPattern.Append(CharacterClasses.Whitespace);
+    _ = _characterClassPattern.Append(CharacterClasses.Whitespace);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.NonWhitespace"/> ('\S') to the character class.
+  /// </summary>
   public CharacterClassBuilder NonWhitespace()
   {
-    _characterClassPattern.Append(CharacterClasses.NonWhitespace);
+    _ = _characterClassPattern.Append(CharacterClasses.NonWhitespace);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.Word"/> ('\w') to the character class.
+  /// </summary>
   public CharacterClassBuilder Word()
   {
-    _characterClassPattern.Append(CharacterClasses.Word);
+    _ = _characterClassPattern.Append(CharacterClasses.Word);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.NonWord"/> ('\W') to the character class.
+  /// </summary>
   public CharacterClassBuilder NonWord()
   {
-    _characterClassPattern.Append(CharacterClasses.NonWord);
+    _ = _characterClassPattern.Append(CharacterClasses.NonWord);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.Tab"/> ('\t') to the character class.
+  /// </summary>
   public CharacterClassBuilder Tab()
   {
-    _characterClassPattern.Append(CharacterClasses.Tab);
+    _ = _characterClassPattern.Append(CharacterClasses.Tab);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.Newline"/> ('\n') to the character class.
+  /// </summary>
   public CharacterClassBuilder Newline()
   {
-    _characterClassPattern.Append(CharacterClasses.Newline);
+    _ = _characterClassPattern.Append(CharacterClasses.Newline);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.LowercaseLetter"/> ('[a-z]') to the character class.
+  /// </summary>
   public CharacterClassBuilder LowercaseLetter()
   {
-    _characterClassPattern.Append(CharacterClasses.LowercaseLetter);
+    _ = _characterClassPattern.Append(CharacterClasses.LowercaseLetter);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.UppercaseLetter"/> ('[A-Z]') to the character class.
+  /// </summary>
   public CharacterClassBuilder UppercaseLetter()
   {
-    _characterClassPattern.Append(CharacterClasses.UppercaseLetter);
+    _ = _characterClassPattern.Append(CharacterClasses.UppercaseLetter);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.HexDigit"/> ('[0-9a-fA-F]') to the character class.
+  /// </summary>
   public CharacterClassBuilder HexDigit()
   {
-    _characterClassPattern.Append(CharacterClasses.HexDigit);
+    _ = _characterClassPattern.Append(CharacterClasses.HexDigit);
     return this;
   }
-
+  /// <summary>
+  /// Appends the <see cref="CharacterClasses.NonHexDigit"/> ('[^0-9a-fA-F]') to the character class.
+  /// </summary>
   public CharacterClassBuilder NonHexDigit()
   {
-    _characterClassPattern.Append(CharacterClasses.NonHexDigit);
+    _ = _characterClassPattern.Append(CharacterClasses.NonHexDigit);
     return this;
   }
 
