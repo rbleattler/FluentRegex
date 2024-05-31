@@ -20,17 +20,28 @@ public class AnchorBuilder : IBuilder
     get => _pattern.ToString();
     set => _pattern = _pattern.Append(value);
   }
-  private readonly PatternBuilder _regexBuilder;
+  private readonly Builder _patternBuilder;
   internal StringBuilder _pattern = new StringBuilder();
 
 
   /// <summary>
   /// Initializes a new instance of the <see cref="AnchorBuilder"/> class.
   /// </summary>
-  /// <param name="regexBuilder"></param>
-  public AnchorBuilder(PatternBuilder regexBuilder)
+  /// <param name="patternBuilder"></param>
+  public AnchorBuilder(Builder patternBuilder)
   {
-    _regexBuilder = regexBuilder;
+    _patternBuilder = patternBuilder;
+  }
+
+  /// <summary>
+  /// Builds the anchor.
+  /// </summary>
+  /// <returns>The <see cref="PatternBuilder"/> instance that the anchor was added to.</returns>
+  public dynamic Build()
+  {
+    _patternBuilder._pattern.Append(Anchor);
+    // Validate(); //TODO: Is there any valid reason to add this?
+    return _patternBuilder;
   }
 
   /// <summary>
@@ -114,25 +125,13 @@ public class AnchorBuilder : IBuilder
   }
 
   /// <summary>
-  /// Builds the anchor.
-  /// </summary>
-  /// <returns>The <see cref="PatternBuilder"/> instance that the anchor was added to.</returns>
-  public PatternBuilder Build()
-  {
-    _regexBuilder._pattern.Append(Anchor);
-    // Validate(); //TODO: Is there any valid reason to add this?
-    return _regexBuilder;
-  }
-
-
-  /// <summary>
   /// Appends a literal string to the pattern.
   /// </summary>
   /// <param name="literal"></param>
   /// <returns>This <see cref="AnchorBuilder"/> instance.</returns>
   public AnchorBuilder AppendLiteral(string literal)
   {
-    ((IBuilder)_regexBuilder).AppendLiteral(literal);
+    ((IBuilder)_patternBuilder).AppendLiteral(literal);
     return this;
   }
 
@@ -142,7 +141,7 @@ public class AnchorBuilder : IBuilder
   void IBuilder.Validate()
   {
     throw new NotImplementedException();
-    // ((IBuilder)_regexBuilder).Validate();
+    // ((IBuilder)_patternBuilder).Validate();
   }
 
   /// <summary>
@@ -151,7 +150,7 @@ public class AnchorBuilder : IBuilder
   void IBuilder.Validate(bool _)
   {
     throw new NotImplementedException();
-    // ((IBuilder)_regexBuilder).Validate();
+    // ((IBuilder)_patternBuilder).Validate();
   }
 
   string IBuilder.ToString()
