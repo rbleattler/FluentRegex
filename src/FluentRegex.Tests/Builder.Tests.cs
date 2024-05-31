@@ -16,7 +16,7 @@ public class MockBuilder : Builder
 
   public MockBuilder()
   {
-    _pattern = new StringBuilder();
+    Pattern = new StringBuilder();
   }
 
 }
@@ -93,7 +93,7 @@ public class BuilderTests : BuilderTestGroup
   [Fact]
   public void Validate_ThrowsNoExceptionOnValidPattern()
   {
-    _builder.Pattern.Append("abc");
+        _ = _builder.Pattern.Append("abc");
     _builder.Validate();
   }
 }

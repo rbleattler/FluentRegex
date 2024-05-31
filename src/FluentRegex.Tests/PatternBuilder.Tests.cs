@@ -74,28 +74,28 @@ public class PatternBuilderTests
                             .Build()
                             .ToString();
     Assert.Equal("^", result);
-    _patternBuilder.Pattern.Clear();
+        _ = _patternBuilder.Pattern.Clear();
 
     result = _patternBuilder.StartAnchor()
                             .EndOfLine()
                             .Build()
                             .ToString();
     Assert.Equal("$", result);
-    _patternBuilder.Pattern.Clear();
+        _ = _patternBuilder.Pattern.Clear();
 
     result = _patternBuilder.StartAnchor()
                             .StartOfWord()
                             .Build()
                             .ToString();
     Assert.Equal(@"\b", result);
-    _patternBuilder.Pattern.Clear();
+        _ = _patternBuilder.Pattern.Clear();
 
     result = _patternBuilder.StartAnchor()
                             .EndOfWord()
                             .Build()
                             .ToString();
     Assert.Equal(@"\b", result);
-    _patternBuilder.Pattern.Clear();
+        _ = _patternBuilder.Pattern.Clear();
 
   }
 

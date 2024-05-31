@@ -18,16 +18,35 @@ public abstract class GroupBuilderTestGroup
 
   public void ClearGroupBuilderPattern()
   {
-    _groupBuilder.Pattern.Clear();
+    _ = _groupBuilder.Pattern.Clear();
   }
 
   public void ClearPatternBuilderPattern()
   {
-    _patternBuilder.Pattern.Clear();
+    _ = _patternBuilder.Pattern.Clear();
   }
 
 }
 
+[Collection("Basic Group Tests")]
+public class BasicGroupTests : GroupBuilderTestGroup
+{
+  [Fact(DisplayName = "Groups: StartGroup: When Building A Group In Another Group, Should Return Expected String ")]
+  public void WhenBuildingAGroupInAnotherGroup_ShouldReturnExpectedString()
+  {
+    result = _patternBuilder.StartGroup()
+                              .AppendLiteral("before_nested_group")
+                              .AppendLiteral(".")
+                              .StartGroup()
+                                .AppendLiteral("test")
+                                .Build()
+                              .AppendLiteral(".")
+                              .AppendLiteral("after_nested_group")
+                            .Build()
+                          .ToString();
+    Assert.Equal("(before_nested_group\\.(test)\\.after_nested_group)", result);
+  }
+}
 [Collection("Capture Groups")]
 public class CaptureGroupTests : GroupBuilderTestGroup
 {

@@ -34,7 +34,7 @@ public class AnchorBuilderTests : AnchorBuilderTestGroup
   [Fact(DisplayName = "AnchorBuilder: End of String No Line Break ShouldAppend Expected Anchor (\\Z)")]
   public void EndOfStringNoLineBreak_ShouldAppendEndOfStringNoLineBreakAnchor()
   {
-    _patternBuilder.AppendLiteral("test");
+        _ = _patternBuilder.AppendLiteral("test");
     result = _anchorBuilder.EndOfStringNoLineBreak()
                            .Build()
                            .ToString();

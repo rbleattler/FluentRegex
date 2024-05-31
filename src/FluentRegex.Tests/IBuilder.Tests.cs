@@ -6,7 +6,7 @@ namespace FluentRegexTests;
 public class IBuilderTests
 {
   private PatternBuilder _builder = new PatternBuilder();
-  private string result = "";
+  private string? result = "";
 
   [Fact(DisplayName = "AppendLiteral appends literal string to pattern")]
   public void AppendLiteral_AppendsLiteralStringToPattern()
@@ -27,7 +27,7 @@ public class IBuilderTests
   [Fact(DisplayName = "ValidateEnd throws exception for invalid pattern")]
   public void ValidateEnd_ThrowsExceptionForInvalidPattern()
   {
-    _builder.Pattern.Append('(').ToString();
+    _ = _builder.Pattern.Append('(').ToString();
     result = Record.Exception(_builder.ValidateEnd)
                     .Message;
     Assert.NotNull(result);
@@ -36,7 +36,7 @@ public class IBuilderTests
   [Fact(DisplayName = "Validate does not throw exception for valid pattern")]
   public void Validate_DoesNotThrowExceptionForValidPattern()
   {
-    _builder.Pattern.Append("(test)"); // Balanced parentheses
+    _ = _builder.Pattern.Append("(test)"); // Balanced parentheses
     var exception = Record.Exception(_builder.Validate);
     Assert.Null(exception);
   }
@@ -44,7 +44,7 @@ public class IBuilderTests
   [Fact(DisplayName = "ValidateStart throws exception for invalid pattern")]
   public void ValidateStart_ThrowsExceptionForInvalidPattern()
   {
-    _builder.Pattern.Append(')').ToString();
+    _ = _builder.Pattern.Append(')').ToString();
     result = Record.Exception(_builder.ValidateStart)
                     .Message;
     Assert.NotNull(result);
@@ -53,7 +53,7 @@ public class IBuilderTests
   [Fact(DisplayName = "ValidateParenthesesPairs throws exception for invalid pattern")]
   public void ValidateParenthesesPairs_ThrowsExceptionForInvalidPattern()
   {
-    _builder.Pattern.Append("(test").ToString();
+    _ = _builder.Pattern.Append("(test").ToString();
     result = Record.Exception(_builder.ValidateParenthesesPairs)
                     .Message;
     Assert.NotNull(result);
@@ -62,16 +62,16 @@ public class IBuilderTests
   [Fact(DisplayName = "ValidatePatternRegex throws exception for invalid pattern")]
   public void ValidatePatternRegex_ThrowsExceptionForInvalidPattern()
   {
-    _builder.Pattern.Append("[").ToString();
+    _ = _builder.Pattern.Append("[").ToString();
     result = Record.Exception(_builder.ValidatePatternRegex)
-                    .Message;
+                    .Message ?? null;
     Assert.NotNull(result);
   }
 
   [Fact(DisplayName = "ValidateNoEmptyStructures throws exception for invalid pattern")]
   public void ValidateNoEmptyStructures_ThrowsExceptionForInvalidPattern()
   {
-    _builder.Pattern.Append("()").ToString();
+    _ = _builder.Pattern.Append("()").ToString();
     result = Record.Exception(_builder.ValidateNoEmptyStructures)
                     .Message;
     Assert.NotNull(result);
@@ -80,7 +80,7 @@ public class IBuilderTests
   [Fact(DisplayName = "ValidateNoUnEscapedCharacters throws exception for invalid pattern")]
   public void ValidateNoUnEscapedCharacters_ThrowsExceptionForInvalidPattern()
   {
-    _builder.AppendLiteral(@"(abc\)");
+    _ = _builder.AppendLiteral(@"(abc\)");
     result = Record.Exception(_builder.ValidateNoUnEscapedCharacters)
                     .Message;
     Assert.NotNull(result);

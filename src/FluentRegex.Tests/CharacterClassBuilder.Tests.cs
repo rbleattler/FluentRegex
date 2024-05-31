@@ -45,7 +45,7 @@ public class CharacterClassBuilderTests
   public void CharacterClassBuilder_WithValidInput_ShouldReturnExpectedOutput(string propertyName, string expectedValue)
   {
     var methodInfo = typeof(CharacterClassBuilder).GetMethod(propertyName);
-    methodInfo?.Invoke(_characterClassBuilder, null);
+        _ = (methodInfo?.Invoke(_characterClassBuilder, null));
 
     result = _characterClassBuilder.Build().Pattern.ToString();
 
