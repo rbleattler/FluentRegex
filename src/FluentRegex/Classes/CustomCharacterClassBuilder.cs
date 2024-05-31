@@ -25,7 +25,7 @@ public class CustomCharacterClassBuilder
   public CustomCharacterClassBuilder(CharacterClassBuilder characterClassBuilder)
   {
     _characterClassBuilder = characterClassBuilder;
-    StartPattern();
+        _ = StartPattern();
   }
 
   /// <summary>
@@ -33,7 +33,7 @@ public class CustomCharacterClassBuilder
   /// </summary>
   public CharacterClassBuilder Build()
   {
-    EndPattern();
+        _ = EndPattern();
     Validate();
     _ = _characterClassBuilder.AppendLiteral(_customCharacterClassPattern.ToString());
     return _characterClassBuilder;
@@ -62,13 +62,13 @@ public class CustomCharacterClassBuilder
 
   CustomCharacterClassBuilder StartPattern()
   {
-    _customCharacterClassPattern.Append('[');
+    _ = _customCharacterClassPattern.Append('[');
     return this;
   }
 
   CustomCharacterClassBuilder EndPattern()
   {
-    _customCharacterClassPattern.Append(']');
+    _ = _customCharacterClassPattern.Append(']');
     return this;
   }
 
@@ -80,7 +80,7 @@ public class CustomCharacterClassBuilder
   public CustomCharacterClassBuilder AppendLiteral(string literal)
   {
     // If the literal is a special token of any sort, we have to escape it ('-' for example, is a special token in a character class, so we have to escape it)
-    _customCharacterClassPattern.Append(EscapeLiteral(literal));
+    _ = _customCharacterClassPattern.Append(EscapeLiteral(literal));
     return this;
   }
 
@@ -90,7 +90,7 @@ public class CustomCharacterClassBuilder
   /// </summary>
   public CustomCharacterClassBuilder Negate()
   {
-    _customCharacterClassPattern.Insert(1, '^');
+        _ = _customCharacterClassPattern.Insert(1, '^');
     return this;
   }
 
@@ -99,9 +99,9 @@ public class CustomCharacterClassBuilder
   /// </summary>
   public CustomCharacterClassBuilder InRange(char start, char end)
   {
-    _customCharacterClassPattern.Append(start);
-    _customCharacterClassPattern.Append('-');
-    _customCharacterClassPattern.Append(end);
+    _ = _customCharacterClassPattern.Append(start);
+    _ = _customCharacterClassPattern.Append('-');
+    _ = _customCharacterClassPattern.Append(end);
     return this;
   }
 
@@ -110,10 +110,10 @@ public class CustomCharacterClassBuilder
   /// </summary>
   public CustomCharacterClassBuilder NotInRange(char start, char end)
   {
-    _customCharacterClassPattern.Append(start);
-    _customCharacterClassPattern.Append('-');
-    _customCharacterClassPattern.Append(end);
-    Negate();
+    _ = _customCharacterClassPattern.Append(start);
+    _ = _customCharacterClassPattern.Append('-');
+    _ = _customCharacterClassPattern.Append(end);
+        _ = Negate();
     return this;
   }
 
