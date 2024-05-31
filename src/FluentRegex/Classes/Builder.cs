@@ -22,12 +22,6 @@ public abstract class Builder : IBuilder
   public abstract AnchorBuilder StartAnchor();
 
   /// <summary>
-  /// Adds a group to the pattern.
-  /// </summary>
-  /// <returns></returns>
-  // public abstract GroupBuilder StartGroup();
-
-  /// <summary>
   /// Adds a character class to the pattern.
   /// </summary>
   public abstract CharacterClassBuilder StartCharacterClass();
@@ -90,30 +84,30 @@ public abstract class Builder : IBuilder
     switch (minimum, maximum)
     {
       case (-1, -1):
-        Pattern.Append(string.Empty);
+        _ = Pattern.Append(string.Empty);
         break;
       case (0, -1):
-        Pattern.Append('*');
+        _ = Pattern.Append('*');
         break;
       case (1, -1):
-        Pattern.Append('+');
+        _ = Pattern.Append('+');
         break;
       case (0, 1):
-        Pattern.Append('?');
+        _ = Pattern.Append('?');
         break;
       case var (min, max) when min == max:
-        Pattern.Append($"{{{min}}}");
+        _ = Pattern.Append($"{{{min}}}");
         break;
       case var (min, max) when min == -1:
-        Pattern.Append($"{{0,{max}}}");
+        _ = Pattern.Append($"{{0,{max}}}");
         break;
       case var (min, max) when max == -1:
-        Pattern.Append($"{{{min},}}");
+        _ = Pattern.Append($"{{{min},}}");
         break;
       default:
         if (minimum < 0 && maximum < 0)
           throw new ArgumentException("At least one of the parameters must be greater than or equal to 0.");
-        Pattern.Append($"{{{minimum},{maximum}}}");
+        _ = Pattern.Append($"{{{minimum},{maximum}}}");
         break;
     }
     return this;
@@ -124,7 +118,7 @@ public abstract class Builder : IBuilder
   /// </summary>
   public dynamic Lazy()
   {
-    Pattern.Append('?');
+    _ = Pattern.Append('?');
     return this;
   }
 
@@ -139,7 +133,7 @@ public abstract class Builder : IBuilder
       throw new InvalidOperationException("Cannot apply one or more quantifier to a zero or one quantifier.");
     if (Pattern.ToString().EndsWith("+"))
       throw new InvalidOperationException("Cannot apply one or more quantifier to a one or more quantifier.");
-    Pattern.Append('+');
+    _ = Pattern.Append('+');
     return this;
   }
 
@@ -161,7 +155,7 @@ public abstract class Builder : IBuilder
       case '}':
         throw new InvalidOperationException("Cannot apply greedy quantifier to a custom quantifier.");
       default:
-        Pattern.Append('*');
+        _ = Pattern.Append('*');
         break;
     }
     return this;
@@ -172,7 +166,7 @@ public abstract class Builder : IBuilder
   /// </summary>
   public dynamic ZeroOrOne()
   {
-    Pattern.Append('?');
+    _ = Pattern.Append('?');
     return this;
   }
 
@@ -181,7 +175,7 @@ public abstract class Builder : IBuilder
   /// </summary>
   public dynamic Or()
   {
-    Pattern.Append('|');
+    _ = Pattern.Append('|');
     return this;
   }
 

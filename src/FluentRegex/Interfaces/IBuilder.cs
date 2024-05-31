@@ -42,7 +42,7 @@ public interface IBuilder
       else
         outLiteral += character;
     }
-    Pattern.Append(outLiteral);
+    _ = Pattern.Append(outLiteral);
     return this;
   }
 
@@ -101,9 +101,12 @@ public interface IBuilder
   /// <exception cref="InvalidOperationException"></exception>
   internal void ValidateParenthesesPairs()
   {
+    if (GetType() == typeof(GroupBuilder))
+      return;
+
     var counts = GetOpenCloseCharacterCounts();
     if (counts['('] != counts[')'])
-      throw new InvalidOperationException("The number of opening and closing parentheses do not match.");
+      throw new InvalidOperationException($"The number of opening and closing parentheses do not match in pattern: {Pattern}");
   }
 
   /// <summary>
@@ -291,7 +294,9 @@ public interface IBuilder
     }
     catch (ArgumentException ex)
     {
-      throw new ArgumentException("The pattern is invalid.", ex);
+      if (GetType() == typeof(GroupBuilder) && !ParenthesesCountsAreEven())
+        return;
+      throw new ArgumentException($"Invalid Pattern: {Pattern}", ex);
     }
   }
 

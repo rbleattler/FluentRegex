@@ -20,7 +20,7 @@ public class AnchorBuilder : IBuilder
     get => _pattern.ToString();
     set => _pattern = _pattern.Append(value);
   }
-  private readonly Builder _patternBuilder;
+  private readonly dynamic _patternBuilder;
   internal StringBuilder _pattern = new StringBuilder();
 
 
@@ -39,7 +39,7 @@ public class AnchorBuilder : IBuilder
   /// <returns>The <see cref="PatternBuilder"/> instance that the anchor was added to.</returns>
   public dynamic Build()
   {
-    _patternBuilder._pattern.Append(Anchor);
+    _ =_patternBuilder.Pattern.Append(Anchor);
     // Validate(); //TODO: Is there any valid reason to add this?
     return _patternBuilder;
   }
@@ -155,6 +155,6 @@ public class AnchorBuilder : IBuilder
 
   string IBuilder.ToString()
   {
-    return _pattern.ToString();
+    return Pattern.ToString();
   }
 }

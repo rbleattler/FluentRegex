@@ -33,7 +33,7 @@ public class GroupBuilder : Builder
 
   // private new readonly StringBuilder _pattern = new StringBuilder();
 
-  internal Builder _builder;
+  internal dynamic _builder;
   internal NamedGroupStyle? _namedGroupStyle = null;
   internal string? _groupName = null;
   internal GroupType _groupType = GroupType.Capturing;
@@ -55,7 +55,7 @@ public class GroupBuilder : Builder
     _namedGroupStyle = namedGroupStyle;
     _groupName = groupName;
     _groupType = GroupType.NamedCapturing;
-    Start_Group();
+    _ = Start_Group();
   }
 
   /// <summary>
@@ -70,7 +70,7 @@ public class GroupBuilder : Builder
       throw new ArgumentException("Named capturing groups must have a name.", nameof(groupType));
 
     _builder = patternBuilder;
-    Start_Group();
+    _ = Start_Group();
   }
 
 
@@ -81,7 +81,7 @@ public class GroupBuilder : Builder
   public GroupBuilder(Builder patternBuilder)
   {
     _builder = patternBuilder;
-    Start_Group();
+    _ = Start_Group();
   }
 
   /// <summary>
@@ -91,18 +91,50 @@ public class GroupBuilder : Builder
 
   public override dynamic Build()
   {
-    var outPattern = _pattern.ToString();
-
-    if (!outPattern.EndsWith(")"))
+    // use the IBuilder validation internal methods to also account for situations where this is closing an outer group immediately after closing an inner group
+    Dictionary<char, int> parenthesesCounts = ((IBuilder)this).GetOpenCloseCharacterCounts();
+    if (parenthesesCounts['('] > parenthesesCounts[')'] && Pattern.ToString().EndsWith(')'))
     {
       _ = EndGroup();
-      outPattern = _pattern.ToString();
-      if (!outPattern.EndsWith(")"))
+    }
+
+    if (!Pattern.ToString().EndsWith(")"))
+    {
+      _ = EndGroup();
+      if (!Pattern.ToString().EndsWith(")"))
         throw new ArgumentException("The group is not closed.");
     }
-    _builder._pattern.Append(outPattern);
+
+    _ = _builder.Pattern.Append(Pattern.ToString());
     Validate();
+
     return _builder;
+  }
+
+  /// <summary>
+  /// Builds the group. Casts the return type to the specified type.
+  /// </summary>
+  /// <typeparam name="T">The type to cast the return value to.</typeparam>
+  public dynamic Build<T>()
+  {
+    // use the IBuilder validation internal methods to also account for situations where this is closing an outer group immediately after closing an inner group
+    Dictionary<char, int> parenthesesCounts = ((IBuilder)this).GetOpenCloseCharacterCounts();
+    if (parenthesesCounts['('] > parenthesesCounts[')'] && Pattern.ToString().EndsWith(')'))
+    {
+      _ = EndGroup();
+    }
+
+    if (!Pattern.ToString().EndsWith(")"))
+    {
+      _ = EndGroup();
+      if (!Pattern.ToString().EndsWith(")"))
+        throw new ArgumentException("The group is not closed.");
+    }
+
+    _ = _builder.Pattern.Append(Pattern.ToString());
+    Validate();
+
+    return (T)_builder;
   }
 
   /// <summary>
@@ -113,14 +145,6 @@ public class GroupBuilder : Builder
     return new CharacterClassBuilder(this);
   }
 
-  /// <summary>
-  /// Starts building the group by adding an opening parenthesis to the pattern. Depending on the <see cref="GroupType"/>, the method will add the appropriate syntax to the pattern.
-  /// </summary>
-  /// <returns> A new instance of the <see cref="GroupBuilder"/> class. </returns>
-  // public GroupBuilder StartGroup()
-  // {
-  //   return new GroupBuilder(this._builder);
-  // }
 
   /// <summary>
   /// Starts building the group by adding an opening parenthesis to the pattern. Depending on the <see cref="GroupType"/>, the method will add the appropriate syntax to the pattern.
@@ -128,32 +152,32 @@ public class GroupBuilder : Builder
   /// <returns> A new instance of the <see cref="GroupBuilder"/> class. </returns>
   internal GroupBuilder Start_Group()
   {
-    _pattern.Append('(');
+    _ = Pattern.Append('(');
     switch (GroupType)
     {
       case GroupType.Capturing:
         break;
       case GroupType.NonCapturing:
-        _pattern.Append("?:");
+        _ = Pattern.Append("?:");
         break;
       case GroupType.NamedCapturing:
-        _pattern.Append('?');
+        _ = Pattern.Append('?');
         switch (GroupStyle)
         {
           case NamedGroupStyle.AngleBrackets:
-            _pattern.Append('<');
-            _pattern.Append(GroupName);
-            _pattern.Append('>');
+            _ = Pattern.Append('<');
+            _ = Pattern.Append(GroupName);
+            _ = Pattern.Append('>');
             break;
           case NamedGroupStyle.PStyle:
-            _pattern.Append("P<");
-            _pattern.Append(GroupName);
-            _pattern.Append('>');
+            _ = Pattern.Append("P<");
+            _ = Pattern.Append(GroupName);
+            _ = Pattern.Append('>');
             break;
           case NamedGroupStyle.SingleQuote:
-            _pattern.Append('\'');
-            _pattern.Append(GroupName);
-            _pattern.Append('\'');
+            _ = Pattern.Append('\'');
+            _ = Pattern.Append(GroupName);
+            _ = Pattern.Append('\'');
             break;
           default:
             break;
@@ -205,7 +229,7 @@ public class GroupBuilder : Builder
 
   internal GroupBuilder EndGroup()
   {
-    _pattern.Append(')');
+    _ = Pattern.Append(')');
     return this;
   }
 
