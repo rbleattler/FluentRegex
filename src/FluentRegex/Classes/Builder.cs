@@ -25,7 +25,7 @@ public abstract class Builder : IBuilder
   /// Adds a group to the pattern.
   /// </summary>
   /// <returns></returns>
-  public abstract GroupBuilder StartGroup();
+  // public abstract GroupBuilder StartGroup();
 
   /// <summary>
   /// Adds a character class to the pattern.
@@ -35,7 +35,7 @@ public abstract class Builder : IBuilder
   /// <summary>
   /// Builds the regular expression pattern.
   /// </summary>
-  public abstract PatternBuilder Build();
+  public abstract dynamic Build();
 
   /// <summary>
   /// The <c>ToString</c> method returns the current value of the pattern as a string.
@@ -83,6 +83,8 @@ public abstract class Builder : IBuilder
   /// </summary>
   /// <param name="minimum"></param>
   /// <param name="maximum"></param>
+  //FIXME: Doesn't seem to return builder type every time.
+
   public dynamic Times(int minimum = -1, int maximum = -1)
   {
     switch (minimum, maximum)
@@ -135,6 +137,8 @@ public abstract class Builder : IBuilder
       throw new InvalidOperationException("Cannot apply one or more quantifier to a zero or one quantifier.");
     if (Pattern.ToString().EndsWith("*"))
       throw new InvalidOperationException("Cannot apply one or more quantifier to a zero or one quantifier.");
+    if (Pattern.ToString().EndsWith("+"))
+      throw new InvalidOperationException("Cannot apply one or more quantifier to a one or more quantifier.");
     Pattern.Append('+');
     return this;
   }
@@ -179,6 +183,44 @@ public abstract class Builder : IBuilder
   {
     Pattern.Append('|');
     return this;
+  }
+
+
+  /// <summary>
+  /// Adds a <see cref="GroupBuilder"/> to the pattern.
+  /// </summary>
+  /// <returns><see cref="GroupBuilder"/></returns>
+  ///
+  public GroupBuilder StartGroup()
+  {
+    return CaptureGroup();
+  }
+
+  /// <summary>
+  /// Adds a <see cref="GroupBuilder"/> to the pattern.
+  /// </summary>
+  /// <returns><see cref="GroupBuilder"/></returns>
+  public GroupBuilder CaptureGroup()
+  {
+    return new GroupBuilder(this);
+  }
+
+  /// <summary>
+  /// Adds a <see cref="GroupBuilder"/> to the pattern.
+  /// </summary>
+  public GroupBuilder NonCaptureGroup()
+  {
+    return new GroupBuilder(this, GroupType.NonCapturing);
+  }
+
+  /// <summary>
+  /// Adds a <see cref="GroupBuilder"/> to the pattern.
+  /// </summary>
+  /// <param name="namedGroupStyle"></param>
+  /// <param name="groupName"></param>
+  public GroupBuilder NamedCaptureGroup(NamedGroupStyle namedGroupStyle = NamedGroupStyle.AngleBrackets, string? groupName = null)
+  {
+    return new GroupBuilder(this, namedGroupStyle, groupName);
   }
 
   /// <summary>
