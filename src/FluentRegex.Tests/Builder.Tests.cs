@@ -6,10 +6,10 @@ namespace FluentRegexTests.BuilderTests;
 
 public class MockBuilder : Builder
 {
-  internal StringBuilder _pattern { get; set; }
+  // internal StringBuilder _pattern { get; set; }
   public override StringBuilder Pattern { get => _pattern; set => _pattern = value; }
   public override AnchorBuilder StartAnchor() => throw new NotImplementedException();
-  public override GroupBuilder StartGroup() => throw new NotImplementedException();
+  // public override GroupBuilder StartGroup() => throw new NotImplementedException();
   public override CharacterClassBuilder StartCharacterClass() => throw new NotImplementedException();
 
   public override PatternBuilder Build() => throw new NotImplementedException();
@@ -96,4 +96,56 @@ public class BuilderTests : BuilderTestGroup
     _builder.Pattern.Append("abc");
     _builder.Validate();
   }
+}
+
+class Main
+{
+
+  public PatternBuilder builder = new PatternBuilder();
+  public string output = "";
+  Main()
+  {
+    output = builder.StartAnchor()
+    .StartOfLine()
+        .Build()
+        .StartGroup()
+    .StartGroup()
+      .StartCharacterClass()
+        .Word()
+            .Build()
+            .Or()
+        .StartCharacterClass()
+        .StartCustomPattern()
+          .AppendLiteral("_")
+            .AppendLiteral("-")
+            .AppendLiteral(".")
+            .AppendLiteral("+")
+            .Build()
+            .Build()
+          .Build()
+        .Times(1, -1)
+      .AppendLiteral("@")
+      .Times(1, 1)
+      .StartGroup()
+      .StartCharacterClass()
+        .Word()
+            .Build()
+            .Or()
+        .StartCharacterClass()
+        .StartCustomPattern()
+          .AppendLiteral("_")
+            .AppendLiteral("-")
+            .AppendLiteral(".")
+            .Build()
+            .Build()
+          .Build()
+        .Times(1, -1)
+      .StartAnchor()
+        .EndOfLine()
+        .Build()
+    .Build()
+      .ToString();
+    Console.WriteLine(output);
+  }
+
 }

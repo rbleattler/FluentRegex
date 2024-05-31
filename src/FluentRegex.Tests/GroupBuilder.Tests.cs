@@ -90,14 +90,14 @@ public class NamedCaptureGroupTests : GroupBuilderTestGroup
   }
 }
 
-[Collection("StartGroup Method")]
-public class StartGroupTests : GroupBuilderTestGroup
+[Collection("Start_Group Method")]
+public class Start_GroupTests : GroupBuilderTestGroup
 {
   [Fact(DisplayName = "Capture Group: When Starting Group, Should Return Expected String")]
   public void WhenStartingGroup_ShouldReturnExpectedString()
   {
     ClearGroupBuilderPattern();
-    result = _groupBuilder.StartGroup()
+    result = _groupBuilder.Start_Group()
                           .Pattern
                           .ToString();
     Assert.Equal("(", result);
@@ -109,7 +109,7 @@ public class StartGroupTests : GroupBuilderTestGroup
     _groupBuilder = _patternBuilder.NonCaptureGroup();
     ClearGroupBuilderPattern();
     result = _groupBuilder
-                  .StartGroup()
+                  .Start_Group()
                   .Pattern
                   .ToString();
     Assert.Equal("(?:", result);
@@ -122,7 +122,7 @@ public class StartGroupTests : GroupBuilderTestGroup
     _groupBuilder = _patternBuilder.NamedCaptureGroup(NamedGroupStyle.AngleBrackets, "name");
     ClearGroupBuilderPattern();
     result = _groupBuilder
-                  .StartGroup()
+                  .Start_Group()
                   .Pattern
                   .ToString();
     Assert.Equal("(?<name>", result);
@@ -134,7 +134,7 @@ public class StartGroupTests : GroupBuilderTestGroup
     _groupBuilder = _patternBuilder.NamedCaptureGroup(NamedGroupStyle.PStyle, "name");
     ClearGroupBuilderPattern();
     result = _groupBuilder
-                  .StartGroup()
+                  .Start_Group()
                   .Pattern
                   .ToString();
     Assert.Equal("(?P<name>", result);
@@ -146,7 +146,7 @@ public class StartGroupTests : GroupBuilderTestGroup
     _groupBuilder = _patternBuilder.NamedCaptureGroup(NamedGroupStyle.SingleQuote, "name");
     ClearGroupBuilderPattern();
     result = _groupBuilder
-                  .StartGroup()
+                  .Start_Group()
                   .Pattern
                   .ToString();
     Assert.Equal("(?'name'", result);

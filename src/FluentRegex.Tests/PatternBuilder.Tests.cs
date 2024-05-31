@@ -26,6 +26,9 @@ public class PatternBuilderTests
     Assert.Equal("(test)", result);
   }
 
+  // [Fact(DisplayName = "PatternBuilder: Email Validation should return ")]
+  // public void
+
   [Fact]
   public void TestCaptureGroup()
   {
