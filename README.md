@@ -1,18 +1,21 @@
 # FluentRegex
 
-FluentRegex is a .NET library for building regular expressions in a readable and understandable way. It's not yet available as a NuGet package as we're still adding more features.
+FluentRegex is a .NET library for building regular expressions in a readable and understandable way. It adopts the [Builder Pattern](https://en.wikipedia.org/wiki/Builder_pattern#:~:text=The%20builder%20pattern%20is%20a,Gang%20of%20Four%20design%20patterns.). This library is intended to make it easier to write and understand regular expressions, especially for those who are not familiar with them.
 
 ## Table of Contents
 
-- [What is FluentRegex?](#what-is-fluentregex)
+- [About](#about)
 - [Examples](#examples)
 - [Usage](#usage)
 - [Documentation](#documentation)
 - [Feedback and Contributions](#feedback-and-contributions)
 
-## What is FluentRegex?
+## About
 
-FluentRegex is a library that provides a LINQ-style approach to building regular expressions in .NET. For more information, check out this related blog post: [I don't know Regex](http://ideasof.andersaberg.com/idea/17/i-dont-know-regex).
+I originally started working on this alone, and after getting through the first couple of iterations, I found some similar projects that seemed to be accomplishing a lot of what I had set out to do. This compelled me to fork from [Anders Åberg's](https://github.com/abergs) project, and eventually re-write the library completely. Given their impact on my work, I felt it would only be right to share links to their projects here:
+
+- [abergs/RegExpBuilder](https://github.com/abergs/RegExpBuilder)
+- [bcwood/FluentRegex](https://github.com/bcwood/FluentRegex)
 
 ## Examples
 
@@ -20,60 +23,90 @@ Here are some examples of how you can use FluentRegex:
 
 ### Example 1: Email Validation
 
+> Note: This is _not_ the most efficient way to validate an email address. It is only an example of how to use FluentRegex.
+
 ```csharp
-var builder = new Builder.FluentRegex();
-var r = builder
-    .StartOfInput()
-    .Letter() // Must start with letter a-z
-    .Letters() // any number of letters
-    .Or()
-    .Digits() // any number of numbers
-    .Exactly(1).Of("@")
-    .Letters() // domain
-    .Exactly(1).Of(".")
-    .Letters() // top-level domain
-    .EndOfInput()
-    .ToRegExp();
+
+class Main
+{
+
+  public PatternBuilder builder = new PatternBuilder();
+  public string output = "";
+  Main()
+  {
+    output = builder.StartAnchor()
+    .StartOfLine()
+        .Build()
+        .StartGroup()
+    .StartGroup()
+      .StartCharacterClass()
+        .Word()
+            .Build()
+            .Or()
+        .StartCharacterClass()
+        .StartCustomPattern()
+          .AppendLiteral("_")
+            .AppendLiteral("-")
+            .AppendLiteral(".")
+            .AppendLiteral("+")
+            .Build()
+            .Build()
+          .Build()
+        .Times(1, -1)
+      .AppendLiteral("@")
+      .Times(1, 1)
+      .StartGroup()
+      .StartCharacterClass()
+        .Word()
+            .Build()
+            .Or()
+        .StartCharacterClass()
+        .StartCustomPattern()
+          .AppendLiteral("_")
+            .AppendLiteral("-")
+            .AppendLiteral(".")
+            .Build()
+            .Build()
+          .Build()
+        .Times(1, -1)
+      .StartAnchor()
+        .EndOfLine()
+        .Build()
+    .Build()
+      .ToString();
+    Console.WriteLine(output);
+  }
+}
+// Output: ^((\w|[_\-.+])+@{1}(\w|[_\-.])+$)
 
 ```
-<!-- TODO: Add output -->
 
 ### Example 2: Matching Specific Strings
 
 Match either "github" or "bitbucket" (`^github|bitbucket$`):
 
 ```csharp
-var builder = new Builder.FluentRegex();
-var r = builder
-    .StartOfInput()
-    .Exactly(1).Of("github")
-    .Or()
-    .Exactly(1).Of("bitbucket")
-    .EndOfInput()
-    .ToRegExp();
-```
-
-### Example 3: Finding a Single Digit
-
-Match a single digit (`\d`):
-
-```csharp
-var builder = new Builder.FluentRegex();
-var r = builder
-    .Digit()
-    .ToRegExp();
-```
-
-### Example 4: Matching Exact String Repetitions
-
-Match "a" repeated exactly 3 times (`a{3}`):
-
-```csharp
-var builder = new Builder.FluentRegex();
-var r = builder
-    .Exactly(3)
-    .Of("a")
-    .ToRegExp();
+class Main
+{
+  public PatternBuilder builder = new PatternBuilder();
+  public string output = "";
+  Main()
+  {
+    output = builder.StartAnchor()
+                        .StartOfLine()
+                        .Build()
+                    .StartGroup()
+                        .AppendLiteral("github")
+                        .Or()
+                        .AppendLiteral("bitbucket")
+                        .Build()
+                    .StartAnchor()
+                        .EndOfLine()
+                        .Build()
+                    .ToString();
+    Console.WriteLine(output);
+  }
+}
 ```
 
 ## Usage
@@ -82,7 +115,7 @@ For more examples, refer to the tests in the `FluentRegex.Tests` project.
 
 ## Documentation
 
-Additional documentation is available in the `docs` folder. See the [Index](docs/Index.md) file for more information.
+Additional documentation is available in the `docs` folder. See the [Index](docs/index.md) file for more information.
 
 ## Feedback and Contributions
 
