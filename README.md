@@ -4,7 +4,7 @@ FluentRegex is a .NET library for building regular expressions in a readable and
 
 | Build Status | Test Status (main)|
 |--------------| ------------------|
-|[![Build Status](https://rableattler.visualstudio.com/PublicProjects/_apis/build/status%2Frbleattler.FluentRegex?repoName=rbleattler%2FFluentRegex&branchName=main)](https://rableattler.visualstudio.com/PublicProjects/_build/latest?definitionId=4&repoName=rbleattler%2FFluentRegex&branchName=main)|![Azure DevOps tests (branch)](https://img.shields.io/azure-devops/tests/rableattler/PublicProjects/4/main)|
+|[![Build Status](https://rableattler.visualstudio.com/PublicProjects/_apis/build/status%2Frbleattler.FluentRegex?repoName=rbleattler%2FFluentRegex&branchName=main)](https://rableattler.visualstudio.com/PublicProjects/_build/latest?definitionId=4&repoName=rbleattler%2FFluentRegex&branchName=main)|![Azure DevOps tests (branch)](https://img.shields.io/azure-devops/tests/rableattler/PublicProjects/4/main?logo=azuredevops&link=https%3A%2F%2Frableattler.visualstudio.com%2FPublicProjects%2F_build%2Fresults%3FbuildId%3D48%26view%3Dms.vss-test-web.build-test-results-tab)|
 
 ## Table of Contents
 
