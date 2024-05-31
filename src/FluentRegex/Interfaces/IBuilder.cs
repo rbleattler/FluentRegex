@@ -1,6 +1,10 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
+using FluentRegex.Exceptions;
+[assembly: InternalsVisibleTo("FluentRegex.Tests")]
 namespace FluentRegex;
+
 
 /// <summary>
 /// Interface <c>IBuilder</c> defines the methods and properties for building a regular expression pattern.
@@ -12,22 +16,17 @@ public interface IBuilder
   /// <summary>
   /// Gets or sets the pattern.
   /// </summary>
-  /// <value></value>
+
   public StringBuilder Pattern { get; set; }
-  // public AnchorBuilder StartAnchor();
-  // public GroupBuilder StartGroup();
-  // public CharacterClassBuilder StartCharacterClass();
 
   /// <summary>
   /// Builds the regular expression pattern.
   /// </summary>
-  /// <returns></returns>
-  public PatternBuilder Build();
+  public dynamic Build();
 
   /// <summary>
   /// Returns the regular expression pattern as a string.
   /// </summary>
-  /// <returns></returns>
   public string ToString();
 
   /// <summary>
@@ -59,15 +58,7 @@ public interface IBuilder
   /// A <see cref="bool"/> value to skip the regular expression validation.
   ///</param>
   public void Validate(bool skipRegexValidation);
-  // {
-  //   ValidateNoUnEscapedCharacters();
-  //   ValidateParenthesesPairs();
-  //   ValidateStart();
-  //   ValidateEnd();
-  //   ValidateNoEmptyStructures();
-  //   if (!skipRegexValidation)
-  //     ValidatePatternRegex();
-  // }
+
 
   /// <summary>
   /// Validates the pattern to ensure it does not end with any characters that would cause an exception when building the regular expression.
@@ -90,10 +81,7 @@ public interface IBuilder
     var badStartChars = new char[]
     {
 
-// This is here because bracket colorizing was irritating me.
-#if _ == true
-        '{'
-#endif
+        '{',
         '*',
         '+',
         '?',
@@ -113,34 +101,14 @@ public interface IBuilder
   /// <exception cref="InvalidOperationException"></exception>
   internal void ValidateParenthesesPairs()
   {
-    var pattern = Pattern.ToString();
-    var openParenthesesCount = 0;
-    var closeParenthesesCount = 0;
-
-    foreach (var character in pattern)
-    {
-      if (character == '(')
-      {
-        if (pattern.IndexOf(character) == 0)
-        {
-          openParenthesesCount++;
-        }
-        if (pattern.IndexOf(character) > 0 && pattern[pattern.IndexOf(character) - 1] != '\\')
-          openParenthesesCount++;
-      }
-      if (character == ')')
-      {
-        if (pattern.IndexOf(character) > 0 && pattern[pattern.IndexOf(character) - 1] != '\\')
-          closeParenthesesCount++;
-      }
-    }
-    if (openParenthesesCount != closeParenthesesCount)
+    var counts = GetOpenCloseCharacterCounts();
+    if (counts['('] != counts[')'])
       throw new InvalidOperationException("The number of opening and closing parentheses do not match.");
   }
 
   /// <summary>
   /// Validates the pattern to ensure it does not contain empty structures. Including empty parentheses, empty non-capturing groups, and empty named capturing groups, empty Character classes.
-  /// /// </summary>
+  /// </summary>
   internal void ValidateNoEmptyStructures()
   {
     var pattern = Pattern.ToString();
@@ -166,6 +134,7 @@ public interface IBuilder
   internal void ValidateNoUnEscapedCharacters()
   {
     var pattern = Pattern.ToString();
+    var closingCharacters = new char[] { ')', ']', '}' };
     var escapableCharacters = new char[]
     {
         '\\',
@@ -209,11 +178,15 @@ public interface IBuilder
         CharacterClasses.EndOfString,
         CharacterClasses.EndOfStringNoLineBreak,
     };
+
+    // Are there an uneven number of closing characters?
+    CheckInvalidEscapedClosure(pattern, closingCharacters);
+
     // Check for instances of '\' where the next character is not a character that can be escaped OR where it is not part of an Anchor or Character Class
     for (int i = 0; i < pattern.Length; i++)
     {
-      var indexPlusOne = i + 1;
       char patternPlusOne;
+      var indexPlusOne = i + 1;
       if (indexPlusOne >= pattern.Length)
         patternPlusOne = new char();
       else
@@ -223,11 +196,87 @@ public interface IBuilder
       if (pattern[i] == '\\')
       {
         if (!escapableCharacters.Contains(patternPlusOne) && !characterClasses.Contains(escapePattern))
-          // throw new InvalidOperationException("The character () following the escape character is not escapable, or the '\\' is out of place. Check the pattern at index " + i + 1 + ".");
           throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
       }
     }
 
+  }
+
+  internal Dictionary<char, int> GetOpenCloseCharacterCounts()
+  {
+    var pattern = Pattern.ToString();
+    var openCloseCharacters = new char[] { '(', ')', '[', ']', '{', '}' };
+    var OpenCloseCharacterCounts = new Dictionary<char, int>();
+    foreach (var character in openCloseCharacters)
+    {
+      OpenCloseCharacterCounts.Add(character, GetCountOfCharacter(character, pattern));
+    }
+    return OpenCloseCharacterCounts;
+  }
+
+  internal int GetCountOfCharacter(char character, string pattern)
+  {
+    return pattern.Count(x => x == character);
+  }
+
+  internal bool OpenClosingCharacterCountsMatch(string pattern)
+  {
+    var counts = GetOpenCloseCharacterCounts();
+    return counts['('] == counts[')']
+           && counts['['] == counts[']']
+           && counts['{'] == counts['}'];
+  }
+
+  internal bool ParenthesesCountsAreEven()
+  {
+    var counts = GetOpenCloseCharacterCounts();
+    return counts['('] == counts[')'];
+  }
+
+  internal bool SquareBracketCountsAreEven()
+  {
+    var counts = GetOpenCloseCharacterCounts();
+    return counts['['] == counts[']'];
+  }
+
+  internal bool CurlyBraceCountsAreEven()
+  {
+    var counts = GetOpenCloseCharacterCounts();
+    return counts['{'] == counts['}'];
+  }
+
+  internal void CheckInvalidEscapedClosure(string pattern, char[] closingCharacters)
+  {
+
+    // Check for instances of '\' where the next character is a closing character for a Character Class, Anchor, or Group
+    for (int i = 0; i < pattern.Length; i++)
+    {
+      char patternPlusOne;
+      var indexPlusOne = i + 1;
+      if (indexPlusOne >= pattern.Length)
+        patternPlusOne = new char();
+      else
+        patternPlusOne = pattern[indexPlusOne];
+      var patternChar = pattern[i];
+      var escapePattern = $"{patternChar}{patternPlusOne}";
+
+      if (pattern[i] == '\\')
+      {
+        if (closingCharacters.Contains(patternPlusOne))
+        {
+          if (patternPlusOne == ')' && ParenthesesCountsAreEven())
+            throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
+          // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
+          if (patternPlusOne == ']' && SquareBracketCountsAreEven())
+            throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
+          // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
+          if (patternPlusOne == '}' && CurlyBraceCountsAreEven())
+            throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
+          // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
+        }
+      }
+
+    }
   }
 
   /// <summary>
