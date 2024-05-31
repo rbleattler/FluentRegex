@@ -8,9 +8,12 @@
 param(
   [Parameter()]
   [ValidateSet("Debug", "Release")]
-  $Configuration = "Debug"
+  $Configuration = "Debug",
+  [Parameter()]
+  [string] $xmldocexe = "$PSScriptRoot\..\..\xmldoc2md\src\XMLDoc2Markdown\bin\Release\net8.0\XMLDoc2Markdown.exe"
 )
 begin {
+  New-Alias xmldoc2md $xmldocexe
   Write-Debug "Enter [$($PSCmdlet.MyInvocation.MyCommand.Name)]..."
   $PSBoundParameters.Keys.ForEach{
     if ($PSBoundParameters.PSItem -is [string]) {
@@ -45,7 +48,7 @@ process {
   Write-Output "Generating documentation for $ProjectName..."
   Write-Output "Project Path: $LibraryPath"
   Write-Output "Output Path: $OutputPath"
-  . xmldoc2md.exe $LibraryPath $OutputPath
+  xmldoc2md $LibraryPath $OutputPath
   Write-Output "Finished Generating Documentation!"
 }
 end {
