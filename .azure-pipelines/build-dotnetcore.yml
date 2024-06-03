@@ -311,10 +311,10 @@ steps:
       - task: DotNetCoreCLI@2
         displayName: "dotnet pack"
         inputs:
-          command: 'push'
-          packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-          nuGetFeedType: 'external'
-          publishFeedCredentials: 'NugetGallery'
+          command: 'pack'
+          packagesToPack: '**/*.nuspec'
+          nobuild: true
+          versioningScheme: 'byBuildNumber'
         env:
           DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
           DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
@@ -322,10 +322,10 @@ steps:
       - task: DotNetCoreCLI@2
         displayName: "dotnet nuget push"
         inputs:
-          command: 'pack'
-          packagesToPack: '**/*.nuspec'
-          nobuild: true
-          versioningScheme: 'byBuildNumber'
+          command: 'push'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+          nuGetFeedType: 'external'
+          publishFeedCredentials: 'NugetGallery'
         env:
           DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
           DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
