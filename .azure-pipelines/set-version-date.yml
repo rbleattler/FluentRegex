@@ -16,7 +16,7 @@ steps:
       $dateVersion = [datetime]::Now.ToString('yy.M.d')
       Write-Host "##[debug] Adding build id to number"
 
-      if($branchName.Startswith("release/")) {
+      if($branchName.Startswith("release/") -or $branchName -eq "main") {
         Write-Host "##[debug] Release Branch, not adding prerelease tag"
         $version = "$($dateVersion).$($buildCounter)"
       } else {
