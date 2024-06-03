@@ -309,6 +309,7 @@ steps:
   # If the source branch is main, then pack and push the nuget package
   - ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
       - task: DotNetCoreCLI@2
+        displayName: "dotnet pack"
         inputs:
           command: 'push'
           packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
@@ -319,6 +320,7 @@ steps:
           DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
 
       - task: DotNetCoreCLI@2
+        displayName: "dotnet nuget push"
         inputs:
           command: 'pack'
           packagesToPack: '**/*.nuspec'
