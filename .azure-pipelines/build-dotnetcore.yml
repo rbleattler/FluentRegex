@@ -306,4 +306,24 @@ steps:
           DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
           DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
 
-#TODO: Add a task to pack the project and push to nuget gallery
+  # If the source branch is main, then pack and push the nuget package
+  - ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'push'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+          nuGetFeedType: 'external'
+          publishFeedCredentials: 'NugetGallery'
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: 'pack'
+          packagesToPack: '**/*.nuspec'
+          nobuild: true
+          versioningScheme: 'byBuildNumber'
+        env:
+          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
+          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
