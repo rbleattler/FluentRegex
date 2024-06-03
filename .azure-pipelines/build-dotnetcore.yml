@@ -319,13 +319,10 @@ steps:
           DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
           DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
 
-      - task: DotNetCoreCLI@2
+      - task: NuGetCommand@2
         displayName: "dotnet nuget push"
         inputs:
           command: 'push'
-          packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+          packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
           nuGetFeedType: 'external'
           publishFeedCredentials: 'NugetGallery'
-        env:
-          DOTNET_ROOT: "$(Agent.TempDirectory)/dotnet"
-          DOTNET_VERSION: $(DotNetVersionVar.dotnetVersion)
