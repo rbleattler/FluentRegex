@@ -7,10 +7,15 @@
     <owners>Rob Bleattler</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A package that allows for fluent construction of regular expressions in dotnet.</description>
+    <dependencies>
+      <group targetFramework="net8.0" />
+    </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\net8.0\publish\FluentRegex.dll" target="lib" />
-    <file src="bin\Release\net8.0\publish\FluentRegex.xml" target="lib" />
-    <file src="bin\Release\net8.0\publish\FluentRegex.pdb" target="lib" />
+    <file src="bin\Release\net8.0\FluentRegex.dll" target="lib\net8.0" />
+    <file src="bin\Release\net8.0\FluentRegex.xml" target="lib\net8.0" />
+    <file src="bin\Release\net8.0\FluentRegex.pdb" target="lib\net8.0" />
+    <file src="..\..\README.MD" target="" />
+    <file src="..\..\docs\*.MD" target="docs" />
   </files>
 </package>
