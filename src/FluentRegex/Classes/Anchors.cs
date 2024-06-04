@@ -38,12 +38,10 @@ public static class Anchors
   /// <summary>
   /// Matches the position at the end of the string. Not satisfied by a new line character, therefor must be at the very end of the string.
   /// </summary>
-  //TODO: Rename for clarity
   public const string EndOfString = @"\z";
 
   /// <summary>
   /// Matches the position at the end of the string. Ignores multiline mode. Matches before a new line (\n) character, but not before a new line sequence (\r\n).
   /// </summary>
-  //TODO: Rename for clarity
   public const string EndOfStringNoLineBreak = @"\Z";
 }

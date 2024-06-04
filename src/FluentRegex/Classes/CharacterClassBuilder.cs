@@ -11,7 +11,6 @@ public class CharacterClassBuilder
   private readonly Builder _patternBuilder;
   private StringBuilder _characterClassPattern = new StringBuilder();
 
-  //TODO: Remove the PatternBuilder and GroupBuilder constructors or find a better way to accomplish what I'm doing with dynamic
   /// <summary>
   /// Initializes a new instance of the <see cref="CharacterClassBuilder"/> class.
   /// </summary>

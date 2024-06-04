@@ -40,7 +40,6 @@ public class AnchorBuilder : IBuilder
   public dynamic Build()
   {
     _ =_patternBuilder.Pattern.Append(Anchor);
-    // Validate(); //TODO: Is there any valid reason to add this?
     return _patternBuilder;
   }
 

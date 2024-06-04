@@ -183,7 +183,6 @@ public class GroupBuilder : Builder
             break;
         }
         break;
-      //TODO: Add support for these group types
       // - PositiveLookahead:
       //   - pattern : "?="
       // - NegativeLookahead:

@@ -77,7 +77,6 @@ public abstract class Builder : IBuilder
   /// </summary>
   /// <param name="minimum"></param>
   /// <param name="maximum"></param>
-  //FIXME: Doesn't seem to return builder type every time.
 
   public dynamic Times(int minimum = -1, int maximum = -1)
   {
@@ -230,7 +229,6 @@ public abstract class Builder : IBuilder
     var isPTypeGroup = type == typeof(GroupBuilder) && ((GroupBuilder)this).GroupStyle == NamedGroupStyle.PStyle;
     if (patternIsPGroup || type == typeof(GroupBuilder) && isPTypeGroup)
     {
-      //TODO: Add validation for PType groups by converting it to an AngleBracket style group and validating it.
       skipRegexValidation = true;
     }
 

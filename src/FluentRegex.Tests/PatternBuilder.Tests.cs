@@ -67,7 +67,6 @@ public class PatternBuilderTests
   [Fact]
   public void TestStartAnchor()
   {
-    //TODO: Can I do this with class data iteratively?
 
     result = _patternBuilder.StartAnchor()
                             .StartOfLine()
