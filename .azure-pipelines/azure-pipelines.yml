@@ -16,6 +16,7 @@ trigger:
     exclude:
       - README.md
       - CHANGELOG.md
+      - TODO.md
       - LICENSE
       - .gitignore
       - .gitattributes
