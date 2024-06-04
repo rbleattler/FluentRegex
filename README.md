@@ -76,7 +76,7 @@ class Main
     .StartAnchor()
       .EndOfLine()
       .Build()
-  .Build()
+    .Build()
     .ToString();
     Console.WriteLine(output);
   }
