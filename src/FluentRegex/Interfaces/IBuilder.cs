@@ -44,7 +44,7 @@ public interface IBuilder
   public dynamic AppendLiteral(string literal)
   {
     var outLiteral = new StringBuilder();
-
+    var shouldEscape = false;
     foreach (var character in literal)
     {
       var isGroupChar = IsGroupingCharacter(character);
@@ -53,17 +53,9 @@ public interface IBuilder
         var groupType = GetGroupType(character);
         var typeStart = _groupingStructures[groupType][0];
         var typeEnd = _groupingStructures[groupType][1];
-        if (Pattern.ToString().StartsWith(typeStart) && Pattern.ToString().EndsWith(typeEnd))
-        {
-          outLiteral.Append(character);
-        }
-        else
-        {
-          outLiteral.Append(@"\" + character);
-        }
-
+        shouldEscape = !(Pattern.ToString().StartsWith(typeStart) && Pattern.ToString().EndsWith(typeEnd));
       }
-      else if (_specialCharacters.Contains(character))
+      else if (_specialCharacters.Contains(character) && shouldEscape)
         outLiteral.Append(@"\" + character);
       else
         outLiteral.Append(character);
