@@ -19,6 +19,15 @@ public interface IBuilder
 
   public StringBuilder Pattern { get; set; }
 
+  // An internal reference for grouping structures (parentheses, square brackets, curly braces, etc.)
+  // used for validation purposes.
+  private static readonly Dictionary<string, List<char>> _groupingStructures = new()
+  {
+    { "Brace", new List<char>() { '{', '}' } },
+    { "Bracket", new List<char>() { '[', ']' } },
+    { "Paren", new List<char>() { '(', ')' } }
+  };
+
   /// <summary>
   /// Builds the regular expression pattern.
   /// </summary>
@@ -34,17 +43,49 @@ public interface IBuilder
   /// </summary>
   public dynamic AppendLiteral(string literal)
   {
-    var outLiteral = string.Empty;
+    var outLiteral = new StringBuilder();
+
     foreach (var character in literal)
     {
-      if (_specialCharacters.Contains(character))
-        outLiteral += @"\" + character;
+      var isGroupChar = IsGroupingCharacter(character);
+      if (isGroupChar)
+      {
+        var groupType = GetGroupType(character);
+        var typeStart = _groupingStructures[groupType][0];
+        var typeEnd = _groupingStructures[groupType][1];
+        if (Pattern.ToString().StartsWith(typeStart) && Pattern.ToString().EndsWith(typeEnd))
+        {
+          outLiteral.Append(character);
+        }
+        else
+        {
+          outLiteral.Append(@"\" + character);
+        }
+
+      }
+      else if (_specialCharacters.Contains(character))
+        outLiteral.Append(@"\" + character);
       else
-        outLiteral += character;
+        outLiteral.Append(character);
     }
-    _ = Pattern.Append(outLiteral);
+    _ = Pattern.Append(outLiteral.ToString());
     return this;
   }
+
+  private static string GetGroupType(char character)
+  {
+    if (_groupingStructures["Brace"].Contains(character))
+      return "Brace";
+    if (_groupingStructures["Bracket"].Contains(character))
+      return "Bracket";
+    if (_groupingStructures["Paren"].Contains(character))
+      return "Paren";
+    return string.Empty;
+  }
+
+  private bool IsGroupingCharacter(char character) => _groupingStructures["Brace"].Contains(character)
+                                                      || _groupingStructures["Bracket"].Contains(character)
+                                                      || _groupingStructures["Paren"].Contains(character);
 
   /// <summary>
   /// Validates the pattern to ensure it is well-formed. Each validation method contains explicit error messages which are thrown when the validation fails. This should help the user to understand what is wrong with the pattern, rather than just throwing a generic exception. However the final validation method checks that the pattern is a valid regular expression, and throws a generic exception if it is not, bubbling up the error message from the regular expression engine.
@@ -196,11 +237,8 @@ public interface IBuilder
         patternPlusOne = pattern[indexPlusOne];
       var patternChar = pattern[i];
       var escapePattern = $"{patternChar}{patternPlusOne}";
-      if (pattern[i] == '\\')
-      {
-        if (!escapableCharacters.Contains(patternPlusOne) && !characterClasses.Contains(escapePattern))
-          throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
-      }
+      if (pattern[i] == '\\' && !escapableCharacters.Contains(patternPlusOne) && !characterClasses.Contains(escapePattern))
+        throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
     }
 
   }
@@ -263,20 +301,17 @@ public interface IBuilder
       var patternChar = pattern[i];
       var escapePattern = $"{patternChar}{patternPlusOne}";
 
-      if (pattern[i] == '\\')
+      if (pattern[i] == '\\' && closingCharacters.Contains(patternPlusOne))
       {
-        if (closingCharacters.Contains(patternPlusOne))
-        {
-          if (patternPlusOne == ')' && ParenthesesCountsAreEven())
-            throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
-          // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
-          if (patternPlusOne == ']' && SquareBracketCountsAreEven())
-            throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
-          // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
-          if (patternPlusOne == '}' && CurlyBraceCountsAreEven())
-            throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
-          // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
-        }
+        // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
+        if (patternPlusOne == ')' && ParenthesesCountsAreEven())
+          throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
+        if (patternPlusOne == ']' && SquareBracketCountsAreEven())
+          throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
+        // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
+        if (patternPlusOne == '}' && CurlyBraceCountsAreEven())
+          throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
+        // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
       }
 
     }
