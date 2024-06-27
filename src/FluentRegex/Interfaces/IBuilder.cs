@@ -39,12 +39,38 @@ public interface IBuilder
   public string ToString();
 
   /// <summary>
+  /// The <c>AppendLiteral</c> method appends a literal character to the pattern, escaping any special characters.
+  /// </summary>
+  public dynamic AppendLiteral(char literal)
+  {
+    var outLiteral = new StringBuilder();
+    var shouldEscape = true;
+
+    var isGroupChar = IsGroupingCharacter(literal);
+    if (isGroupChar)
+    {
+      var groupType = GetGroupType(literal);
+      var typeStart = _groupingStructures[groupType][0];
+      var typeEnd = _groupingStructures[groupType][1];
+      shouldEscape = !(Pattern.ToString().StartsWith(typeStart) && Pattern.ToString().EndsWith(typeEnd));
+    }
+
+    if (_specialCharacters.Contains(literal) && shouldEscape)
+      outLiteral.Append(@"\" + literal);
+    else
+      outLiteral.Append(literal);
+
+    _ = Pattern.Append(outLiteral.ToString());
+    return this;
+  }
+
+  /// <summary>
   /// The <c>AppendLiteral</c> method appends a literal string to the pattern, escaping any special characters.
   /// </summary>
   public dynamic AppendLiteral(string literal)
   {
     var outLiteral = new StringBuilder();
-    var shouldEscape = false;
+    var shouldEscape = true;
     foreach (var character in literal)
     {
       var isGroupChar = IsGroupingCharacter(character);
@@ -102,7 +128,7 @@ public interface IBuilder
     var pattern = Pattern.ToString();
     var patternLengthLessOne = pattern.Length - 1;
     if (badEndChars.Contains(pattern[pattern.Length - 1]))
-      throw new InvalidOperationException($"The pattern cannot end with a '{patternLengthLessOne}' character. (pattern : {pattern})");
+      throw new InvalidOperationException($"The pattern cannot end with a '{Pattern[patternLengthLessOne]}' character. (pattern : {pattern})");
   }
 
   /// <summary>
@@ -139,6 +165,8 @@ public interface IBuilder
 
     var counts = GetOpenCloseCharacterCounts();
     if (counts['('] != counts[')'])
+      // How can I account for situations where a user may just want a literal parenthesis in the pattern, while still validating the pattern?
+      // A: You can add a check to see if the pattern contains a literal parenthesis, and if it does, skip the validation.
       throw new InvalidOperationException($"The number of opening and closing parentheses do not match in pattern: {Pattern}");
   }
 
@@ -155,11 +183,7 @@ public interface IBuilder
     if (pattern.Contains("(?:)"))
       throw new InvalidOperationException("Empty non-capturing group is not allowed.");
 
-    if (
-      pattern.Contains("(?<>)") |
-      pattern.Contains("(?P<>)") |
-      pattern.Contains("(?'')")
-      )
+    if (pattern.Contains("(?<>)") | pattern.Contains("(?P<>)") | pattern.Contains("(?'')"))
       throw new InvalidOperationException("Empty named capturing group is not allowed.");
 
   }
@@ -235,14 +259,28 @@ public interface IBuilder
 
   }
 
-  internal Dictionary<char, int> GetOpenCloseCharacterCounts()
+  public Dictionary<char, int> GetOpenCloseCharacterCounts()
   {
     var pattern = Pattern.ToString();
     var openCloseCharacters = new char[] { '(', ')', '[', ']', '{', '}' };
     var OpenCloseCharacterCounts = new Dictionary<char, int>();
     foreach (var character in openCloseCharacters)
     {
-      OpenCloseCharacterCounts.Add(character, GetCountOfCharacter(character, pattern));
+      var count = GetCountOfCharacter(character, pattern);
+      // Lets account for situations where characters are escaped, they should not be counted.
+      // We'll look for each index of the character, and check if the character before it is an escape character, if so we'll reduce the count by one.
+      var escapedCount = 0;
+      var targetIndex = pattern.IndexOf(character);
+      while (targetIndex > -1)
+      {
+        if (targetIndex > 0 && pattern[targetIndex - 1] == '\\')
+          escapedCount++;
+        targetIndex = pattern.IndexOf(character, targetIndex + 1);
+      }
+      count -= escapedCount;
+      OpenCloseCharacterCounts.Add(character, count);
+
+
     }
     return OpenCloseCharacterCounts;
   }
@@ -260,21 +298,27 @@ public interface IBuilder
            && counts['{'] == counts['}'];
   }
 
-  internal bool ParenthesesCountsAreEven()
+  internal bool ParenthesesCountsAreEven(bool checkForZero = false)
   {
     var counts = GetOpenCloseCharacterCounts();
+    if (checkForZero)
+      return counts['('] == counts[')'] && counts['('] > 0 && counts[')'] > 0;
     return counts['('] == counts[')'];
   }
 
-  internal bool SquareBracketCountsAreEven()
+  internal bool SquareBracketCountsAreEven(bool checkForZero = false)
   {
     var counts = GetOpenCloseCharacterCounts();
+    if (checkForZero)
+      return counts['['] == counts[']'] && counts['['] > 0 && counts[']'] > 0;
     return counts['['] == counts[']'];
   }
 
-  internal bool CurlyBraceCountsAreEven()
+  internal bool CurlyBraceCountsAreEven(bool checkForZero = false)
   {
     var counts = GetOpenCloseCharacterCounts();
+    if (checkForZero)
+      return counts['{'] == counts['}'] && counts['{'] > 0 && counts['}'] > 0;
     return counts['{'] == counts['}'];
   }
 
@@ -296,12 +340,12 @@ public interface IBuilder
       if (pattern[i] == '\\' && closingCharacters.Contains(patternPlusOne))
       {
         // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
-        if (patternPlusOne == ')' && ParenthesesCountsAreEven())
+        if (patternPlusOne == ')' && ParenthesesCountsAreEven(true))
           throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
-        if (patternPlusOne == ']' && SquareBracketCountsAreEven())
+        if (patternPlusOne == ']' && SquareBracketCountsAreEven(true))
           throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
         // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
-        if (patternPlusOne == '}' && CurlyBraceCountsAreEven())
+        if (patternPlusOne == '}' && CurlyBraceCountsAreEven(true))
           throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
         // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
       }
