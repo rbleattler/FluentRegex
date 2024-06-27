@@ -19,9 +19,18 @@ public class IBuilderTests
   [Fact(DisplayName = "AppendLiteral Appends and escapes special characters")]
   public void AppendLiteral_AppendsAndEscapesSpecialCharacters()
   {
-    result = _builder.AppendLiteral(".^$*+?()[{|").Pattern
-                     .ToString();
-    Assert.Equal(@"\.\^\$\*\+\?\(\)\[\{\|", result);
+    char[] chars = ['.', '^', '$', '*', '+', '?', '(', ')', '[', '{', '|'];
+    foreach (var c in chars)
+    {
+      var expected = $" \\{c} ";
+      _builder.AppendLiteral(" ");
+      _builder.AppendLiteral(c);
+      _builder.AppendLiteral(" ");
+      result = _builder.ToString();
+      Assert.Equal(expected, result);
+      _ = _builder.Pattern.Clear();
+      result = string.Empty;
+    }
   }
 
   [Fact(DisplayName = "ValidateEnd throws exception for invalid pattern")]
