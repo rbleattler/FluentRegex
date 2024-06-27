@@ -5,6 +5,7 @@
     <version>$version$</version>
     <authors>Rob Bleattler</authors>
     <owners>Rob Bleattler</owners>
+    <readme>README.MD</readme>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A package that allows for fluent construction of regular expressions in dotnet.</description>
     <dependencies>
