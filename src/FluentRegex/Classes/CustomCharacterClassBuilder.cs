@@ -16,7 +16,7 @@ public class CustomCharacterClassBuilder
     set => _customCharacterClassPattern = value;
   }
   private readonly CharacterClassBuilder _characterClassBuilder;
-  private StringBuilder _customCharacterClassPattern = new StringBuilder();
+  private StringBuilder _customCharacterClassPattern = new();
 
   /// <summary>
   /// Initializes a new instance of the <see cref="CustomCharacterClassBuilder"/> class.

@@ -5,7 +5,7 @@ using System;
 namespace FluentRegexTests;
 public class IBuilderTests
 {
-  private PatternBuilder _builder = new PatternBuilder();
+  private PatternBuilder _builder = new();
   private string? result = "";
 
   [Fact(DisplayName = "AppendLiteral appends literal string to pattern")]

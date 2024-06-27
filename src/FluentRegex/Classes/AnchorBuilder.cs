@@ -21,7 +21,7 @@ public class AnchorBuilder : IBuilder
     set => _pattern = _pattern.Append(value);
   }
   private readonly dynamic _patternBuilder;
-  internal StringBuilder _pattern = new StringBuilder();
+  internal StringBuilder _pattern = new();
 
 
   /// <summary>

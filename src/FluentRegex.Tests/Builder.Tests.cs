@@ -6,10 +6,8 @@ namespace FluentRegexTests.BuilderTests;
 
 public class MockBuilder : Builder
 {
-  // internal StringBuilder _pattern { get; set; }
   public override StringBuilder Pattern { get => _pattern; set => _pattern = value; }
   public override AnchorBuilder StartAnchor() => throw new NotImplementedException();
-  // public override GroupBuilder StartGroup() => throw new NotImplementedException();
   public override CharacterClassBuilder StartCharacterClass() => throw new NotImplementedException();
 
   public override PatternBuilder Build() => throw new NotImplementedException();
@@ -101,7 +99,7 @@ public class BuilderTests : BuilderTestGroup
 class Main
 {
 
-  public PatternBuilder builder = new PatternBuilder();
+  public PatternBuilder builder = new();
   public string output = "";
   Main()
   {

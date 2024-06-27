@@ -12,7 +12,7 @@ public abstract class Builder : IBuilder
 {
   /// <inheritdoc/>
   public abstract StringBuilder Pattern { get; set; }
-  internal StringBuilder _pattern = new StringBuilder();
+  internal StringBuilder _pattern = new();
   internal const string _specialCharacters = @"\.^$*+?()[{|";
 
   /// <summary>
@@ -47,23 +47,6 @@ public abstract class Builder : IBuilder
     }
     return Pattern.ToString();
   }
-
-  // /// <summary>
-  // /// The <c>AppendLiteral</c> method appends a literal string to the pattern, escaping any special characters.
-  // /// </summary>
-  // public dynamic AppendLiteral(string literal)
-  // {
-  //   var outLiteral = String.Empty;
-  //   foreach (var character in literal)
-  //   {
-  //     if (_specialCharacters.Contains(character))
-  //       outLiteral += @"\" + character;
-  //     else
-  //       outLiteral += character;
-  //   }
-  //   Pattern.Append(outLiteral);
-  //   return this;
-  // }
 
   /// <summary>
   /// The <c>Times</c> method appends a quantifier to the pattern. The method can take two parameters, <paramref name="minimum"/> and <paramref name="maximum"/>.
@@ -126,11 +109,11 @@ public abstract class Builder : IBuilder
   /// </summary>
   public dynamic OneOrMore()
   {
-    if (Pattern.ToString().EndsWith("?"))
+    if (Pattern.ToString().EndsWith('?'))
       throw new InvalidOperationException("Cannot apply one or more quantifier to a zero or one quantifier.");
-    if (Pattern.ToString().EndsWith("*"))
+    if (Pattern.ToString().EndsWith('*'))
       throw new InvalidOperationException("Cannot apply one or more quantifier to a zero or one quantifier.");
-    if (Pattern.ToString().EndsWith("+"))
+    if (Pattern.ToString().EndsWith('+'))
       throw new InvalidOperationException("Cannot apply one or more quantifier to a one or more quantifier.");
     _ = Pattern.Append('+');
     return this;

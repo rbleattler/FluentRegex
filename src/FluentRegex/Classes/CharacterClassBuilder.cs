@@ -9,7 +9,7 @@ public class CharacterClassBuilder
 {
 
   private readonly Builder _patternBuilder;
-  private StringBuilder _characterClassPattern = new StringBuilder();
+  private StringBuilder _characterClassPattern = new();
 
   /// <summary>
   /// Initializes a new instance of the <see cref="CharacterClassBuilder"/> class.
