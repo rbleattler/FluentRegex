@@ -82,6 +82,16 @@ public class PatternBuilder : Builder, IBuilder
   {
     return ((IBuilder)this).AppendLiteral(literal);
   }
+
+  /// <summary>
+  /// Appends a literal character to the pattern. Implements <see cref="IBuilder.AppendLiteral(char)"/>.
+  /// </summary>
+  /// <param name="literal">The literal character to append.</param>
+  /// <returns><see cref="PatternBuilder"/></returns>
+  public PatternBuilder AppendLiteral(char literal)
+  {
+    return ((IBuilder)this).AppendLiteral(literal);
+  }
 }
 
 
