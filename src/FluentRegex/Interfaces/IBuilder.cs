@@ -259,7 +259,7 @@ public interface IBuilder
 
   }
 
-  public Dictionary<char, int> GetOpenCloseCharacterCounts()
+  internal Dictionary<char, int> GetOpenCloseCharacterCounts()
   {
     var pattern = Pattern.ToString();
     var openCloseCharacters = new char[] { '(', ')', '[', ']', '{', '}' };
