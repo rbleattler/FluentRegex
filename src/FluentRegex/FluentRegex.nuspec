@@ -5,7 +5,7 @@
     <version>$version$</version>
     <authors>Rob Bleattler</authors>
     <owners>Rob Bleattler</owners>
-    <readme>README.MD</readme>
+    <readme>README.md</readme>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A package that allows for fluent construction of regular expressions in dotnet.</description>
     <dependencies>
@@ -16,7 +16,7 @@
     <file src="bin\Release\net8.0\FluentRegex.dll" target="lib\net8.0" />
     <file src="bin\Release\net8.0\FluentRegex.xml" target="lib\net8.0" />
     <file src="bin\Release\net8.0\FluentRegex.pdb" target="lib\net8.0" />
-    <file src="..\..\README.MD" target="" />
-    <file src="..\..\docs\*.MD" target="docs" />
+    <file src="..\..\README.md" target="" />
+    <file src="..\..\docs\*.md" target="docs" />
   </files>
 </package>
