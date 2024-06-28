@@ -27,8 +27,8 @@ public static class PatternBuilderExtensions
     ((IBuilder)builder).ValidateNoEmptyStructures();
   }
 
-  public static void ValidateNoUnEscapedCharacters(this PatternBuilder builder)
+  public static void ValidateNoUnEscapedCharacters(this PatternBuilder builder, bool checkForZero = false)
   {
-    ((IBuilder)builder).ValidateNoUnEscapedCharacters();
+    ((IBuilder)builder).ValidateNoUnEscapedCharacters(checkForZero);
   }
 }

@@ -215,7 +215,7 @@ public abstract class Builder : IBuilder
       skipRegexValidation = true;
     }
 
-    ((IBuilder)this).ValidateNoUnEscapedCharacters();
+    ((IBuilder)this).ValidateNoUnEscapedCharacters(checkForZero: true);
     ((IBuilder)this).ValidateParenthesesPairs();
     ((IBuilder)this).ValidateStart();
     ((IBuilder)this).ValidateEnd();

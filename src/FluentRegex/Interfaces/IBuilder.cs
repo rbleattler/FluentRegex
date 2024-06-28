@@ -87,7 +87,7 @@ public interface IBuilder
       else
         outLiteral.Append(character);
     }
-    _ = Pattern.Append(outLiteral.ToString());
+    _ = Pattern.Append(outLiteral);
     return this;
   }
 
@@ -184,7 +184,8 @@ public interface IBuilder
     if (pattern.Contains("(?:)"))
       throw new InvalidOperationException("Empty non-capturing group is not allowed.");
 
-    if (pattern.Contains("(?<>)") | pattern.Contains("(?P<>)") | pattern.Contains("(?'')"))
+    var groupNameIsEmpty = pattern.Contains("(?<>)") || pattern.Contains("(?P<>)") || pattern.Contains("(?'')");
+    if (groupNameIsEmpty)
       throw new InvalidOperationException("Empty named capturing group is not allowed.");
 
   }
@@ -192,7 +193,7 @@ public interface IBuilder
   /// <summary>
   /// Validates the pattern to ensure there are no unescaped characters that are not escapable.
   /// </summary>
-  internal void ValidateNoUnEscapedCharacters(bool checkForZero = true)
+  internal void ValidateNoUnEscapedCharacters(bool checkForZero = false)
   {
     var pattern = Pattern.ToString();
     var closingCharacters = new char[] { ')', ']', '}' };
@@ -267,28 +268,39 @@ public interface IBuilder
     var OpenCloseCharacterCounts = new Dictionary<char, int>();
     foreach (var character in openCloseCharacters)
     {
-      var count = GetCountOfCharacter(character, pattern);
-      // Lets account for situations where characters are escaped, they should not be counted.
-      // We'll look for each index of the character, and check if the character before it is an escape character, if so we'll reduce the count by one.
-      count = ReduceCountForEscapedCharacter(pattern, character, count);
+      var count = GetUnescapedCharacterCount(character, pattern);
       OpenCloseCharacterCounts.Add(character, count);
-
     }
     return OpenCloseCharacterCounts;
 
-    static int ReduceCountForEscapedCharacter(string pattern, char character, int count)
+  }
+
+  /// <summary>
+  /// Gets the count of a character in a pattern, accounting for escaped characters.
+  /// </summary>
+  /// <param name="character"></param>
+  /// <param name="pattern"></param>
+  /// <returns>
+  /// <see cref="int"/>
+  /// </returns>
+  public int GetUnescapedCharacterCount(char character, string pattern)
+  {
+    var count = GetCountOfCharacter(character, pattern);
+    return ReduceCountForEscapedCharacter(pattern, character, count);
+  }
+
+  internal static int ReduceCountForEscapedCharacter(string pattern, char character, int count)
+  {
+    var targetIndex = pattern.IndexOf(character, 1);
+    if (targetIndex > -1 && pattern[targetIndex] == '\\' && pattern[targetIndex - 1] == '\\')
+      count--;
+    while (targetIndex > 0)
     {
-      var escapedCount = 0;
-      var targetIndex = pattern.IndexOf(character);
-      while (targetIndex > -1)
-      {
-        if (targetIndex > 0 && pattern[targetIndex - 1] == '\\')
-          escapedCount++;
-        targetIndex = pattern.IndexOf(character, targetIndex + 1);
-      }
-      count -= escapedCount;
-      return count;
+      if (pattern[targetIndex - 1] == '\\')
+        count--;
+      targetIndex = pattern.IndexOf(character, targetIndex + 1);
     }
+    return count;
   }
 
   internal int GetCountOfCharacter(char character, string pattern)
@@ -304,22 +316,18 @@ public interface IBuilder
            && counts['{'] == counts['}'];
   }
 
-  internal bool ParenthesesCountsAreEven()
-  {
-    var counts = GetOpenCloseCharacterCounts();
-    return counts['('] == counts[')'];
-  }
 
-  internal bool SquareBracketCountsAreEven()
+  internal bool CountsAreEven(char targetCharacter, char comparisonCharacter, bool checkForZero = false)
   {
-    var counts = GetOpenCloseCharacterCounts();
-    return counts['['] == counts[']'];
-  }
+    Dictionary<char, int> counts = new()
+    {
+        { targetCharacter, GetUnescapedCharacterCount(targetCharacter, Pattern.ToString()) },
+        { comparisonCharacter, GetUnescapedCharacterCount(comparisonCharacter, Pattern.ToString()) }
+    };
+    if (checkForZero)
+      return counts[targetCharacter] == counts[comparisonCharacter] && counts[targetCharacter] != 0;
+    return counts[targetCharacter] == counts[comparisonCharacter];
 
-  internal bool CurlyBraceCountsAreEven()
-  {
-    var counts = GetOpenCloseCharacterCounts();
-    return counts['{'] == counts['}'];
   }
 
   internal void CheckInvalidEscapedClosure(string pattern, char[] closingCharacters, bool checkForZero = false)
@@ -341,19 +349,23 @@ public interface IBuilder
 
       if (patternChar == '\\' && closingCharacters.Contains(patternPlusOne))
       {
-        ValidateClosingCharacterCounts(pattern, patternPlusOne, indexPlusOne, escapePattern);
+        ValidateClosingCharacterCounts(pattern, patternPlusOne, indexPlusOne, escapePattern, checkForZero);
       }
 
     }
   }
 
-  internal void ValidateClosingCharacterCounts(string pattern, char patternPlusOne, int indexPlusOne, string escapePattern)
+  internal void ValidateClosingCharacterCounts(string pattern, char patternPlusOne, int indexPlusOne, string escapePattern, bool checkForZero = false)
   {
-    if (patternPlusOne == ')' && ParenthesesCountsAreEven())
+    var parenCounts = CountsAreEven('(', ')', checkForZero);
+    var squareBracketCounts = CountsAreEven('[', ']', checkForZero);
+    var curlyBraceCounts = CountsAreEven('{', '}', checkForZero);
+
+    if (patternPlusOne == ')' && parenCounts)
       throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
-    if (patternPlusOne == ']' && SquareBracketCountsAreEven())
+    if (patternPlusOne == ']' && squareBracketCounts)
       throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
-    if (patternPlusOne == '}' && CurlyBraceCountsAreEven())
+    if (patternPlusOne == '}' && curlyBraceCounts)
       throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
   }
 
@@ -369,7 +381,7 @@ public interface IBuilder
     }
     catch (ArgumentException ex)
     {
-      if (GetType() == typeof(GroupBuilder) && !ParenthesesCountsAreEven())
+      if (GetType() == typeof(GroupBuilder) && !CountsAreEven('(', ')'))
         return;
       throw new ArgumentException($"Invalid Pattern: {Pattern}", ex);
     }
