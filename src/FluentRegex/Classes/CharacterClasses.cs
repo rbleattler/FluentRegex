@@ -101,13 +101,13 @@ public static class CharacterClasses
   public static readonly string NonWordBoundary = Anchors.NonWordBoundary;
 
   /// <summary>
-  /// Represents the end of string character class \Z.
+  /// Represents the end of string character class \z.
   /// </summary>
   [Description("EndOfString is not a character class, but an anchor")]
   public static readonly string EndOfString = Anchors.EndOfString;
 
   /// <summary>
-  /// Represents the end of string character class \z.
+  /// Represents the end of string character class \Z.
   /// </summary>
   ///   [Description("EndOfString is not a character class, but an anchor")]
   public static readonly string EndOfStringNoLineBreak = Anchors.EndOfStringNoLineBreak;
