@@ -214,16 +214,17 @@ public class GroupBuilder : Builder
   public GroupBuilder AppendLiteral(string literal)
   {
     return ((IBuilder)this).AppendLiteral(literal);
-    // var outLiteral = string.Empty;
-    // foreach (var character in literal)
-    // {
-    //   if (_specialCharacters.Contains(character))
-    //     outLiteral += @"\" + character;
-    //   else
-    //     outLiteral += character;
-    // }
-    // Pattern.Append(outLiteral);
-    // return this;
+  }
+
+
+  /// <summary>
+  /// The <c>AppendLiteral</c> method appends a string to the pattern. This hides the <see cref="IBuilder.AppendLiteral(char)"/> method from the base class.
+  /// </summary>
+  /// <param name="literal"></param>
+  /// <returns><see cref="GroupBuilder"/></returns>
+  public GroupBuilder AppendLiteral(char literal)
+  {
+    return ((IBuilder)this).AppendLiteral(literal);
   }
 
   internal GroupBuilder EndGroup()
