@@ -44,7 +44,7 @@ public class GroupBuilder : Builder
   /// <param name="patternBuilder"></param>
   /// <param name="namedGroupStyle"></param>
   /// <param name="groupName"></param>
-  public GroupBuilder(Builder patternBuilder, NamedGroupStyle namedGroupStyle = NamedGroupStyle.AngleBrackets, string? groupName = null)
+  public GroupBuilder(Builder patternBuilder, NamedGroupStyle namedGroupStyle, string? groupName)
   {
     // If the group name is null or whitespace, generate a random name.
     if (string.IsNullOrWhiteSpace(groupName))
@@ -124,10 +124,10 @@ public class GroupBuilder : Builder
       _ = EndGroup();
     }
 
-    if (!Pattern.ToString().EndsWith(")"))
+    if (!Pattern.ToString().EndsWith(')'))
     {
       _ = EndGroup();
-      if (!Pattern.ToString().EndsWith(")"))
+      if (!Pattern.ToString().EndsWith(')'))
         throw new ArgumentException("The group is not closed.");
     }
 
