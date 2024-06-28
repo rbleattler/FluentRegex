@@ -46,6 +46,15 @@ public class BasicGroupTests : GroupBuilderTestGroup
                           .ToString();
     Assert.Equal("(before_nested_group\\.(test)\\.after_nested_group)", result);
   }
+
+  [Fact(DisplayName = "Building CustomCharacterClass from literal string in group returns expected value")]
+  public void Building_CustomCharacterClass_FromLiteralString_InGroup_ReturnsExpectedValue()
+  {
+    _groupBuilder.AppendLiteral("[a-z]")
+      .Build();
+    result = _groupBuilder.ToString();
+    Assert.Equal("([a-z])", result);
+  }
 }
 [Collection("Capture Groups")]
 public class CaptureGroupTests : GroupBuilderTestGroup
@@ -170,8 +179,6 @@ public class Start_GroupTests : GroupBuilderTestGroup
                   .ToString();
     Assert.Equal("(?'name'", result);
   }
-
-
 
 }
 
