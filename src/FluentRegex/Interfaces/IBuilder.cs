@@ -47,7 +47,7 @@ public interface IBuilder
     var outLiteral = new StringBuilder();
     var shouldEscape = true;
 
-    ProcessCharacter(character, outLiteral, shouldEscape);
+    ProcessCharacter(character, outLiteral, shouldEscape, character.ToString());
 
     Pattern.Append(outLiteral.ToString());
     return this;
@@ -63,16 +63,16 @@ public interface IBuilder
 
     foreach (var character in literal)
     {
-      ProcessCharacter(character, outLiteral, shouldEscape);
+      ProcessCharacter(character, outLiteral, shouldEscape, literal);
     }
     Pattern.Append(outLiteral);
     return this;
   }
 
-  private bool ProcessCharacter(char character, StringBuilder outLiteral, bool shouldEscape)
+  private bool ProcessCharacter(char character, StringBuilder outLiteral, bool shouldEscape, string literal)
   {
     var isGroupChar = IsGroupingCharacter(character);
-    var isCustomCharacterClass = IsCustomCharacterClass(Pattern.ToString());
+    var isCustomCharacterClass = IsCustomCharacterClass(literal);
     if (isGroupChar && !isCustomCharacterClass)
     {
       var groupType = GetGroupType(character);
@@ -105,16 +105,17 @@ public interface IBuilder
 
   internal static bool IsCustomCharacterClass(string literal)
   {
-    bool isValidRegex;
+    bool isValidRegex = true;
+    bool isCustomCharacterClass = false;
     try
     {
-      isValidRegex = null != Regex.Match(literal, @"^\[.*\]$");
+      isCustomCharacterClass = Regex.Match(literal, @"^\[.*\]$").Success;
     }
     catch
     {
       isValidRegex = false;
     }
-    return literal.StartsWith('[') && literal.EndsWith(']') && isValidRegex;
+    return isValidRegex && isCustomCharacterClass;
   }
 
   private static bool IsGroupingCharacter(char character) => _groupingStructures["Brace"].Contains(character)
