@@ -34,7 +34,7 @@ public class AnchorBuilderTests : AnchorBuilderTestGroup
   [Fact(DisplayName = "AnchorBuilder: End of String No Line Break ShouldAppend Expected Anchor (\\Z)")]
   public void EndOfStringNoLineBreak_ShouldAppendEndOfStringNoLineBreakAnchor()
   {
-        _ = _patternBuilder.AppendLiteral("test");
+    _ = _patternBuilder.AppendLiteral("test");
     result = _anchorBuilder.EndOfStringNoLineBreak()
                            .Build()
                            .ToString();
@@ -117,5 +117,76 @@ public class AnchorBuilderTests : AnchorBuilderTestGroup
                            .ToString();
 
     Assert.Equal("test", result);
+  }
+
+  [Fact]
+  public void InvokeMethod_StartOfLine_SetsCorrectPattern()
+  {
+    var builder = new AnchorBuilder(new PatternBuilder());
+    builder.InvokeMethod("StartOfLine");
+    Assert.Equal(Anchors.StartOfLine, builder.Pattern.ToString());
+  }
+
+  [Fact]
+  public void InvokeMethod_EndOfLine_SetsCorrectPattern()
+  {
+    var builder = new AnchorBuilder(new PatternBuilder());
+    builder.InvokeMethod("EndOfLine");
+    Assert.Equal(Anchors.EndOfLine, builder.Pattern.ToString());
+  }
+
+  [Fact]
+  public void InvokeMethod_StartOfWord_SetsCorrectPattern()
+  {
+    var builder = new AnchorBuilder(new PatternBuilder());
+    builder.InvokeMethod("StartOfWord");
+    Assert.Equal(Anchors.StartOfWord, builder.Pattern.ToString());
+  }
+
+  [Fact]
+  public void InvokeMethod_EndOfWord_SetsCorrectPattern()
+  {
+    var builder = new AnchorBuilder(new PatternBuilder());
+    builder.InvokeMethod("EndOfWord");
+    Assert.Equal(Anchors.EndOfWord, builder.Pattern.ToString());
+  }
+
+  [Fact]
+  public void InvokeMethod_WordBoundary_SetsCorrectPattern()
+  {
+    var builder = new AnchorBuilder(new PatternBuilder());
+    builder.InvokeMethod("WordBoundary");
+    Assert.Equal(Anchors.WordBoundary, builder.Pattern.ToString());
+  }
+
+  [Fact]
+  public void InvokeMethod_NonWordBoundary_SetsCorrectPattern()
+  {
+    var builder = new AnchorBuilder(new PatternBuilder());
+    builder.InvokeMethod("NonWordBoundary");
+    Assert.Equal(Anchors.NonWordBoundary, builder.Pattern.ToString());
+  }
+
+  [Fact]
+  public void InvokeMethod_EndOfString_SetsCorrectPattern()
+  {
+    var builder = new AnchorBuilder(new PatternBuilder());
+    builder.InvokeMethod("EndOfString");
+    Assert.Equal(Anchors.EndOfString, builder.Pattern.ToString());
+  }
+
+  [Fact]
+  public void InvokeMethod_EndOfStringNoLineBreak_SetsCorrectPattern()
+  {
+    var builder = new AnchorBuilder(new PatternBuilder());
+    builder.InvokeMethod("EndOfStringNoLineBreak");
+    Assert.Equal(Anchors.EndOfStringNoLineBreak, builder.Pattern.ToString());
+  }
+
+  [Fact]
+  public void InvokeMethod_InvalidMethod_ThrowsException()
+  {
+    var builder = new AnchorBuilder(new PatternBuilder());
+    Assert.Throws<NullReferenceException>(() => builder.InvokeMethod("InvalidMethod"));
   }
 }

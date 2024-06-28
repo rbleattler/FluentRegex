@@ -1,6 +1,7 @@
 using FluentRegex;
 using Xunit;
 using System;
+using FluentRegex.Exceptions;
 
 namespace FluentRegexTests;
 public class IBuilderTests
@@ -16,6 +17,7 @@ public class IBuilderTests
     Assert.Equal("test", result);
   }
 
+  //FIXME: The CheckInvalidEscapedClosure bug impacts this test
   [Fact(DisplayName = "AppendLiteral Appends and escapes special characters")]
   public void AppendLiteral_AppendsAndEscapesSpecialCharacters()
   {
@@ -90,9 +92,8 @@ public class IBuilderTests
   public void ValidateNoUnEscapedCharacters_ThrowsExceptionForInvalidPattern()
   {
     _ = _builder.AppendLiteral(@"(abc\)");
-    result = Record.Exception(_builder.ValidateNoUnEscapedCharacters)
-                    .Message;
-    Assert.NotNull(result);
+
+    Assert.Throws<InvalidCharacterEscapeException>(_builder.ValidateNoUnEscapedCharacters);
   }
 
 
