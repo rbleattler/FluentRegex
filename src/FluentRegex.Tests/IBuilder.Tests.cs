@@ -1,6 +1,7 @@
 using FluentRegex;
 using Xunit;
 using System;
+using System.Text;
 using FluentRegex.Exceptions;
 
 namespace FluentRegexTests;
@@ -93,7 +94,22 @@ public class IBuilderTests
   {
     _ = _builder.AppendLiteral(@"(abc\)");
 
-    Assert.Throws<InvalidCharacterEscapeException>(_builder.ValidateNoUnEscapedCharacters);
+    Assert.Throws<InvalidCharacterEscapeException>(() => _builder.ValidateNoUnEscapedCharacters());
+  }
+
+  [Theory(DisplayName = "GetUnescapedCharacterCount should return correct count")]
+  [InlineData('a', @"a\ab", 1)] // Single unescaped 'a'
+  [InlineData('\\', @"\\", 0)] // Escaped backslash, should count as 0
+  [InlineData('b', @"b\bb\b", 2)] // Two unescaped 'b's, twp escaped
+  [InlineData('c', @"c\c\cc", 2)] // Two unescaped 'c's, two escaped
+  [InlineData('d', @"ddd\d\d\d", 3)] // Three unescaped 'd's, three escaped
+  public void GetUnescapedCharacterCount_ShouldReturnCorrectCount(char character, string pattern, int expectedCount)
+  {
+    _ = _builder.AppendLiteral(pattern);
+
+    int actualCount = ((IBuilder)_builder).GetUnescapedCharacterCount(character, pattern);
+
+    Assert.Equal(expectedCount, actualCount);
   }
 
 
