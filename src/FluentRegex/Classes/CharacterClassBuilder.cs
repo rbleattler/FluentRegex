@@ -208,4 +208,19 @@ public class CharacterClassBuilder
     return this;
   }
 
+    /// <summary>
+  /// Invokes a method by name.
+  /// </summary>
+  /// <param name="methodName"></param>
+  /// <param name="args"></param>
+  /// <returns>
+  /// This <see cref="CharacterClassBuilder"/> instance.
+  /// </returns>
+  public CharacterClassBuilder InvokeMethod(string methodName, params object[] args)
+  {
+    var method = GetType().GetMethod(methodName);
+    _ = method!.Invoke(this, args);
+    return this;
+  }
+
 }

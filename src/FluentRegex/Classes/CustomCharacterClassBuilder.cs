@@ -25,7 +25,7 @@ public class CustomCharacterClassBuilder
   public CustomCharacterClassBuilder(CharacterClassBuilder characterClassBuilder)
   {
     _characterClassBuilder = characterClassBuilder;
-        _ = StartPattern();
+    _ = StartPattern();
   }
 
   /// <summary>
@@ -33,7 +33,7 @@ public class CustomCharacterClassBuilder
   /// </summary>
   public CharacterClassBuilder Build()
   {
-        _ = EndPattern();
+    _ = EndPattern();
     Validate();
     _ = _characterClassBuilder.AppendLiteral(_customCharacterClassPattern.ToString());
     return _characterClassBuilder;
@@ -90,7 +90,7 @@ public class CustomCharacterClassBuilder
   /// </summary>
   public CustomCharacterClassBuilder Negate()
   {
-        _ = _customCharacterClassPattern.Insert(1, '^');
+    _ = _customCharacterClassPattern.Insert(1, '^');
     return this;
   }
 
@@ -113,7 +113,7 @@ public class CustomCharacterClassBuilder
     _ = _customCharacterClassPattern.Append(start);
     _ = _customCharacterClassPattern.Append('-');
     _ = _customCharacterClassPattern.Append(end);
-        _ = Negate();
+    _ = Negate();
     return this;
   }
 
@@ -126,5 +126,21 @@ public class CustomCharacterClassBuilder
     }
     return literal;
 
+  }
+
+  /// <summary>
+  /// Invokes a method by name.
+  /// </summary>
+  /// <param name="methodName"></param>
+  /// <param name="args"></param>
+  /// <returns>
+  /// This <see cref="CustomCharacterClassBuilder"/> instance.
+  /// </returns>
+  public CustomCharacterClassBuilder InvokeMethod(string methodName, params object[] args)
+  {
+    var methods = GetType().GetMethods();
+    var method = Array.Find(methods, m => m.Name == methodName);
+    _ = method!.Invoke(this, args);
+    return this;
   }
 }

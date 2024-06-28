@@ -39,7 +39,7 @@ public class AnchorBuilder : IBuilder
   /// <returns>The <see cref="PatternBuilder"/> instance that the anchor was added to.</returns>
   public dynamic Build()
   {
-    _ =_patternBuilder.Pattern.Append(Anchor);
+    _ = _patternBuilder.Pattern.Append(Anchor);
     return _patternBuilder;
   }
 
@@ -156,4 +156,20 @@ public class AnchorBuilder : IBuilder
   {
     return Pattern.ToString();
   }
+
+  /// <summary>
+  /// Invokes a method by name.
+  /// </summary>
+  /// <param name="methodName"></param>
+  /// <param name="args"></param>
+  /// <returns>
+  /// This <see cref="AnchorBuilder"/> instance.
+  /// </returns>
+  public AnchorBuilder InvokeMethod(string methodName, params object[] args)
+  {
+    var method = GetType().GetMethod(methodName);
+    _ = method!.Invoke(this, args);
+    return this;
+  }
+
 }
