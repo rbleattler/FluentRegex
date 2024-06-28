@@ -81,7 +81,8 @@ public interface IBuilder
         var typeEnd = _groupingStructures[groupType][1];
         shouldEscape = !(Pattern.ToString().StartsWith(typeStart) && Pattern.ToString().EndsWith(typeEnd));
       }
-      else if (_specialCharacters.Contains(character) && shouldEscape)
+
+      if (_specialCharacters.Contains(character) && shouldEscape)
         outLiteral.Append(@"\" + character);
       else
         outLiteral.Append(character);
@@ -191,7 +192,7 @@ public interface IBuilder
   /// <summary>
   /// Validates the pattern to ensure there are no unescaped characters that are not escapable.
   /// </summary>
-  internal void ValidateNoUnEscapedCharacters()
+  internal void ValidateNoUnEscapedCharacters(bool checkForZero = true)
   {
     var pattern = Pattern.ToString();
     var closingCharacters = new char[] { ')', ']', '}' };
@@ -240,7 +241,7 @@ public interface IBuilder
     };
 
     // Are there an uneven number of closing characters?
-    CheckInvalidEscapedClosure(pattern, closingCharacters);
+    CheckInvalidEscapedClosure(pattern, closingCharacters, checkForZero);
 
     // Check for instances of '\' where the next character is not a character that can be escaped OR where it is not part of an Anchor or Character Class
     for (int i = 0; i < pattern.Length; i++)
@@ -269,6 +270,14 @@ public interface IBuilder
       var count = GetCountOfCharacter(character, pattern);
       // Lets account for situations where characters are escaped, they should not be counted.
       // We'll look for each index of the character, and check if the character before it is an escape character, if so we'll reduce the count by one.
+      count = ReduceCountForEscapedCharacter(pattern, character, count);
+      OpenCloseCharacterCounts.Add(character, count);
+
+    }
+    return OpenCloseCharacterCounts;
+
+    static int ReduceCountForEscapedCharacter(string pattern, char character, int count)
+    {
       var escapedCount = 0;
       var targetIndex = pattern.IndexOf(character);
       while (targetIndex > -1)
@@ -278,11 +287,8 @@ public interface IBuilder
         targetIndex = pattern.IndexOf(character, targetIndex + 1);
       }
       count -= escapedCount;
-      OpenCloseCharacterCounts.Add(character, count);
-
-
+      return count;
     }
-    return OpenCloseCharacterCounts;
   }
 
   internal int GetCountOfCharacter(char character, string pattern)
@@ -298,32 +304,28 @@ public interface IBuilder
            && counts['{'] == counts['}'];
   }
 
-  internal bool ParenthesesCountsAreEven(bool checkForZero = false)
+  internal bool ParenthesesCountsAreEven()
   {
     var counts = GetOpenCloseCharacterCounts();
-    if (checkForZero)
-      return counts['('] == counts[')'] && counts['('] > 0 && counts[')'] > 0;
     return counts['('] == counts[')'];
   }
 
-  internal bool SquareBracketCountsAreEven(bool checkForZero = false)
+  internal bool SquareBracketCountsAreEven()
   {
     var counts = GetOpenCloseCharacterCounts();
-    if (checkForZero)
-      return counts['['] == counts[']'] && counts['['] > 0 && counts[']'] > 0;
     return counts['['] == counts[']'];
   }
 
-  internal bool CurlyBraceCountsAreEven(bool checkForZero = false)
+  internal bool CurlyBraceCountsAreEven()
   {
     var counts = GetOpenCloseCharacterCounts();
-    if (checkForZero)
-      return counts['{'] == counts['}'] && counts['{'] > 0 && counts['}'] > 0;
     return counts['{'] == counts['}'];
   }
 
-  internal void CheckInvalidEscapedClosure(string pattern, char[] closingCharacters)
+  internal void CheckInvalidEscapedClosure(string pattern, char[] closingCharacters, bool checkForZero = false)
   {
+    // FIXME: There is an issue right now where when appending a literal, we need to account for the potential for the counts being zero. But this breaks the validation for some situations. I need to work out a way to account for this, without changing the code too much.
+
 
     // Check for instances of '\' where the next character is a closing character for a Character Class, Anchor, or Group
     for (int i = 0; i < pattern.Length; i++)
@@ -337,20 +339,22 @@ public interface IBuilder
       var patternChar = pattern[i];
       var escapePattern = $"{patternChar}{patternPlusOne}";
 
-      if (pattern[i] == '\\' && closingCharacters.Contains(patternPlusOne))
+      if (patternChar == '\\' && closingCharacters.Contains(patternPlusOne))
       {
-        // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
-        if (patternPlusOne == ')' && ParenthesesCountsAreEven(true))
-          throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
-        if (patternPlusOne == ']' && SquareBracketCountsAreEven(true))
-          throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
-        // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
-        if (patternPlusOne == '}' && CurlyBraceCountsAreEven(true))
-          throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
-        // throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
+        ValidateClosingCharacterCounts(pattern, patternPlusOne, indexPlusOne, escapePattern);
       }
 
     }
+  }
+
+  internal void ValidateClosingCharacterCounts(string pattern, char patternPlusOne, int indexPlusOne, string escapePattern)
+  {
+    if (patternPlusOne == ')' && ParenthesesCountsAreEven())
+      throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
+    if (patternPlusOne == ']' && SquareBracketCountsAreEven())
+      throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
+    if (patternPlusOne == '}' && CurlyBraceCountsAreEven())
+      throw new InvalidCharacterEscapeException(patternPlusOne, pattern, indexPlusOne, escapePattern);
   }
 
   /// <summary>
