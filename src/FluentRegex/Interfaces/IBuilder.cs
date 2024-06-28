@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using FluentRegex.Exceptions;
 [assembly: InternalsVisibleTo("FluentRegex.Tests")]
 namespace FluentRegex;
@@ -41,26 +42,14 @@ public interface IBuilder
   /// <summary>
   /// The <c>AppendLiteral</c> method appends a literal character to the pattern, escaping any special characters.
   /// </summary>
-  public dynamic AppendLiteral(char literal)
+  public dynamic AppendLiteral(char character)
   {
     var outLiteral = new StringBuilder();
     var shouldEscape = true;
 
-    var isGroupChar = IsGroupingCharacter(literal);
-    if (isGroupChar)
-    {
-      var groupType = GetGroupType(literal);
-      var typeStart = _groupingStructures[groupType][0];
-      var typeEnd = _groupingStructures[groupType][1];
-      shouldEscape = !(Pattern.ToString().StartsWith(typeStart) && Pattern.ToString().EndsWith(typeEnd));
-    }
+    ProcessCharacter(character, outLiteral, shouldEscape);
 
-    if (_specialCharacters.Contains(literal) && shouldEscape)
-      outLiteral.Append(@"\" + literal);
-    else
-      outLiteral.Append(literal);
-
-    _ = Pattern.Append(outLiteral.ToString());
+    Pattern.Append(outLiteral.ToString());
     return this;
   }
 
@@ -70,25 +59,33 @@ public interface IBuilder
   public dynamic AppendLiteral(string literal)
   {
     var outLiteral = new StringBuilder();
-    var shouldEscape = true;
+    var isCustomCharacterClass = IsCustomCharacterClass(literal);
+    var shouldEscape = !isCustomCharacterClass;
+
     foreach (var character in literal)
     {
-      var isGroupChar = IsGroupingCharacter(character);
-      if (isGroupChar)
-      {
-        var groupType = GetGroupType(character);
-        var typeStart = _groupingStructures[groupType][0];
-        var typeEnd = _groupingStructures[groupType][1];
-        shouldEscape = !(Pattern.ToString().StartsWith(typeStart) && Pattern.ToString().EndsWith(typeEnd));
-      }
-
-      if (_specialCharacters.Contains(character) && shouldEscape)
-        outLiteral.Append(@"\" + character);
-      else
-        outLiteral.Append(character);
+      ProcessCharacter(character, outLiteral, shouldEscape);
     }
-    _ = Pattern.Append(outLiteral);
+    Pattern.Append(outLiteral);
     return this;
+  }
+
+  private bool ProcessCharacter(char character, StringBuilder outLiteral, bool shouldEscape)
+  {
+    var isGroupChar = IsGroupingCharacter(character);
+    if (isGroupChar)
+    {
+      var groupType = GetGroupType(character);
+      var typeStart = _groupingStructures[groupType][0];
+      var typeEnd = _groupingStructures[groupType][1];
+      shouldEscape = !(Pattern.ToString().StartsWith(typeStart) && Pattern.ToString().EndsWith(typeEnd));
+    }
+
+    if (_specialCharacters.Contains(character) && shouldEscape)
+      outLiteral.Append(@"\" + character);
+    else
+      outLiteral.Append(character);
+    return shouldEscape;
   }
 
   private static string GetGroupType(char character)
@@ -102,7 +99,21 @@ public interface IBuilder
     return string.Empty;
   }
 
-  private bool IsGroupingCharacter(char character) => _groupingStructures["Brace"].Contains(character)
+  internal static bool IsCustomCharacterClass(string literal)
+  {
+    bool isValidRegex;
+    try
+    {
+      isValidRegex = null != Regex.Match(literal, @"^\[.*\]$");
+    }
+    catch
+    {
+      isValidRegex = false;
+    }
+    return literal.StartsWith('[') && literal.EndsWith(']') && isValidRegex;
+  }
+
+  private static bool IsGroupingCharacter(char character) => _groupingStructures["Brace"].Contains(character)
                                                       || _groupingStructures["Bracket"].Contains(character)
                                                       || _groupingStructures["Paren"].Contains(character);
 
