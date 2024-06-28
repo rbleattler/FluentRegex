@@ -98,7 +98,7 @@ public class GroupBuilder : Builder
       _ = EndGroup();
     }
 
-    if (!Pattern.ToString().EndsWith(")"))
+    if (!Pattern.ToString().EndsWith(')'))
     {
       _ = EndGroup();
       if (!Pattern.ToString().EndsWith(")"))
