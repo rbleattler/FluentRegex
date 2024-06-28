@@ -112,5 +112,16 @@ public class IBuilderTests
     Assert.Equal(expectedCount, actualCount);
   }
 
+  [Fact(DisplayName = "Building CustomCharacterClass from literal string in group returns expected value")]
+  public void Building_CustomCharacterClass_FromLiteralString_InGroup_ReturnsExpectedValue()
+  {
+    var gb = new GroupBuilder(_builder);
+    gb.StartCharacterClass()
+      .AppendLiteral("[a-z]")
+      .Build()
+    .Build();
+    result = _builder.ToString();
+    Assert.Equal("([a-z])", result);
+  }
 
 }
