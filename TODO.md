@@ -2,6 +2,7 @@
 
 ## Library
 
+- [ ] Basic `Tokens` class that allows for building any type of token (CharacterClass, Anchor, MetaCharacter, etc.) and then converting it to a string, abstracting away the need to know the specific type of token being built.
 - [ ] Add doc generation to CI
 - [ ] Explore use of `Validate` on `Build()` in [AnchorBuilder](src\FluentRegex\Classes\AnchorBuilder.cs#L40)
 - [ ] Update names of `EndOfString` and `EndOfStringNoLineBreak` to better clarify their use cases

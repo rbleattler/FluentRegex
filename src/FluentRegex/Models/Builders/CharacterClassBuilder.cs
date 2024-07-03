@@ -208,7 +208,18 @@ public class CharacterClassBuilder
     return this;
   }
 
-    /// <summary>
+  //TODO: General Tokens --> extract this to a helper, or to base interface
+  // /// <summary>
+  // /// Appends the <see cref="CharacterClasses.CarriageReturn"/> ('\r') to the character class.
+  // /// </summary>
+  // /// <returns> This <see cref="MetaSequenceBuilder"/> instance. </returns>
+  // public MetaSequenceBuilder CarriageReturn()
+  // {
+  //   _ = _characterClassPattern.Append(CharacterClasses.CarriageReturn);
+  //   return this;
+  // }
+
+  /// <summary>
   /// Invokes a method by name.
   /// </summary>
   /// <param name="methodName"></param>

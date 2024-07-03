@@ -10,7 +10,7 @@ namespace FluentRegex;
 /// <summary>
 /// Interface <c>IBuilder</c> defines the methods and properties for building a regular expression pattern.
 /// </summary>
-public interface IBuilder
+public interface IBuilder : IBuildable
 {
   internal const string _specialCharacters = @"\.^$*+?()[{|";
 
@@ -256,7 +256,19 @@ public interface IBuilder
         CharacterClasses.EndOfString,
         CharacterClasses.EndOfStringNoLineBreak,
     };
-
+    var metaSequences = new List<string>()
+    {
+        MetaSequences.AnyCharacter,
+        MetaSequences.Digit,
+        MetaSequences.NonDigit,
+        MetaSequences.Word,
+        MetaSequences.NonWord,
+        MetaSequences.Whitespace,
+        MetaSequences.NonWhitespace,
+        MetaSequences.Tab,
+        //// MetaSequences.AnyUnicode,
+        MetaSequences.Or
+    };
     // Are there an uneven number of closing characters?
     CheckInvalidEscapedClosure(pattern, closingCharacters, checkForZero);
 
@@ -271,7 +283,7 @@ public interface IBuilder
         patternPlusOne = pattern[indexPlusOne];
       var patternChar = pattern[i];
       var escapePattern = $"{patternChar}{patternPlusOne}";
-      if (pattern[i] == '\\' && !escapableCharacters.Contains(patternPlusOne) && !characterClasses.Contains(escapePattern))
+      if (pattern[i] == '\\' && !escapableCharacters.Contains(patternPlusOne) && !characterClasses.Contains(escapePattern) && !metaSequences.Contains(escapePattern))
         throw new InvalidOperationException($"The character ({patternPlusOne}) following the escape character is not escapable, or the '\\' is out of place. Check the pattern at {indexPlusOne}. (pattern : {pattern} | patternPlusOne : {patternPlusOne} | escapePattern : {escapePattern})");
     }
 
@@ -307,7 +319,15 @@ public interface IBuilder
 
   internal static int ReduceCountForEscapedCharacter(string pattern, char character, int count)
   {
-    var targetIndex = pattern.IndexOf(character, 1);
+    int targetIndex;
+    try
+    {
+      targetIndex = pattern.IndexOf(character, 1);
+    }
+    catch
+    {
+      return count;
+    }
     if (targetIndex > -1 && pattern[targetIndex] == '\\' && pattern[targetIndex - 1] == '\\')
       count--;
     while (targetIndex > 0)
@@ -403,4 +423,8 @@ public interface IBuilder
     }
   }
 
+}
+
+public interface IBuildable
+{
 }
